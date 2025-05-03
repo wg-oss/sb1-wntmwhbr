@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User, Briefcase, Mail, MapPin, Edit2, Check, X, LogOut, Heart, MessageSquare, Users } from 'lucide-react';
 import { Realtor, Contractor, PortfolioItem } from '../types';
 
@@ -29,7 +29,7 @@ interface ProfileSectionProps {
   posts: Post[];
   allUsers: (Realtor | Contractor)[];
   onViewProfile?: (user: Realtor | Contractor) => void;
-  onAddProject?: (project: PortfolioItem) => void; // New callback for adding projects
+  onAddProject?: (project: PortfolioItem) => void;
 }
 
 const ProfileSection: React.FC<ProfileSectionProps> = ({
@@ -43,7 +43,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   onAddProject,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUser, setEditedUser] = useState(currentUser);
+  const [editedUser, setEditedUser] = useState({ ...currentUser });
   const [location, setLocation] = useState('San Francisco Bay Area');
   const [activeTab, setActiveTab] = useState<'posts' | 'portfolio'>('posts');
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
@@ -55,6 +55,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
     completionDate: new Date().toISOString(),
     clientFeedback: '',
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const displayUser = viewingUser || editedUser;
   const isOwnProfile = !viewingUser;
@@ -80,7 +81,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
 
   const handleCancel = () => {
     setIsEditing(false);
-    setEditedUser(currentUser);
+    setEditedUser({ ...currentUser });
   };
 
   const handleChange = (field: string, value: string | string[]) => {
@@ -95,6 +96,20 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
       console.error('Image failed to load:', e.currentTarget.src);
     }
     e.currentTarget.src = 'https://via.placeholder.com/150?text=Image+Not+Found';
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedUser(prev => ({
+          ...prev,
+          photo: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleAddProject = () => {
@@ -146,20 +161,77 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
     );
   };
 
+  // Generate a color and initials for placeholder
+  const getInitials = (name: string) => {
+    const names = name.split(' ');
+    return names.length > 1 ? `${names[0][0]}${names[1][0]}` : names[0][0];
+  };
+
+  const getColorFromName = (name: string) => {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const color = `hsl(${hash % 360}, 70%, 80%)`;
+    return color;
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="h-48 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-xl relative">
         <div className="absolute -bottom-16 left-8">
           <div className="relative group">
-            <img
-              src={displayUser.photo}
-              alt={displayUser.name}
-              className="w-32 h-32 rounded-full border-4 border-white object-cover"
-            />
-            {isEditing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                <Edit2 className="text-white" size={24} />
-              </div>
+            {isEditing && isOwnProfile ? (
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  accept="image/*"
+                />
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="cursor-pointer"
+                >
+                  {editedUser.photo ? (
+                    <img
+                      src={editedUser.photo}
+                      alt={editedUser.name}
+                      className="w-32 h-32 rounded-full border-4 border-white object-cover"
+                      onError={handleImageError}
+                    />
+                  ) : (
+                    <div
+                      className="w-32 h-32 rounded-full border-4 border-white flex items-center justify-center text-4xl font-bold"
+                      style={{ backgroundColor: getColorFromName(editedUser.name) }}
+                    >
+                      {getInitials(editedUser.name)}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Edit2 className="text-white" size={24} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {displayUser.photo ? (
+                  <img
+                    src={displayUser.photo}
+                    alt={displayUser.name}
+                    className="w-32 h-32 rounded-full border-4 border-white object-cover"
+                    onError={handleImageError}
+                  />
+                ) : (
+                  <div
+                    className="w-32 h-32 rounded-full border-4 border-white flex items-center justify-center text-4xl font-bold"
+                    style={{ backgroundColor: getColorFromName(displayUser.name) }}
+                  >
+                    {getInitials(displayUser.name)}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -241,7 +313,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
             </p>
             <p className="text-gray-600 flex items-center gap-2 mt-1">
               <Mail size={16} />
-              {displayUser.email}
+              {displayUser.email || 'N/A'}
             </p>
           </div>
 
@@ -289,6 +361,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
                       src={user.photo}
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
+                      onError={handleImageError}
                     />
                     <div>
                       <p className="font-semibold text-gray-800">{user.name}</p>

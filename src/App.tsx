@@ -177,7 +177,6 @@ function App() {
         username: userData.username,
         email: userData.email,
         name: userData.username || 'New User', // Default name for new users
-        photo: 'https://via.placeholder.com/40', // Default photo
         connections: [], // Default for new users
         portfolio: [], // Default for contractors
         posts: [], // Default for new users
@@ -205,7 +204,6 @@ function App() {
         username: tempUser.username,
         email: tempUser.email,
         name: tempUser.username || 'New User', // Default name for new users
-        photo: 'https://via.placeholder.com/40', // Default photo
         connections: [], // Default for new users
         portfolio: [], // Default for contractors
         posts: [], // Default for new users
