@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
-import { KeyRound, User, Building2, UserPlus } from 'lucide-react';
+import { KeyRound, User, Building2, UserPlus, Mail } from 'lucide-react';
 
-interface LoginPageProps {
-  onLogin: (user: { id: string; role: 'realtor' | 'contractor' }) => void;
+interface User {
+  username: string;
+  email: string;
+  password: string;
+  role: 'realtor' | 'contractor';
+  id: string;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+interface LoginPageProps {
+  onLogin: (user: { id: string; role: 'realtor' | 'contractor'; username?: string; email?: string; password?: string }) => void;
+  tempUsers: User[];
+  setTempUsers: React.Dispatch<React.SetStateAction<User[]>>;
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin, tempUsers, setTempUsers }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'realtor' | 'contractor'>('realtor');
@@ -27,18 +38,63 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         setError('Passwords do not match');
         return;
       }
-      // In a real app, this would make an API call to create the account
-      setError('Sign up functionality would be implemented with a backend');
+
+      if (!username || !email || !password) {
+        setError('All fields are required');
+        return;
+      }
+
+      // Check existing credentials first
+      if (username === credentials.realtor.username || username === credentials.contractor.username) {
+        setError('Username already exists');
+        return;
+      }
+
+      // Then check temp users
+      const existingUser = tempUsers.find(
+        user => user.username === username || user.email === email
+      );
+
+      if (existingUser) {
+        setError(existingUser.username === username ? 'Username already exists' : 'Email already exists');
+        return;
+      }
+
+      const newUser = {
+        username,
+        email,
+        password,
+        role,
+        id: `${role === 'realtor' ? 'r' : 'c'}${Date.now()}`
+      };
+
+      setTempUsers(prev => [...prev, newUser]);
+      onLogin(newUser); // Pass the full user object to onLogin
       return;
     }
     
+    // Login logic
+    const tempUser = tempUsers.find(user => user.username === username && user.password === password);
+    if (tempUser) {
+      onLogin(tempUser);
+      return;
+    }
+
     if (username === credentials.realtor.username && password === credentials.realtor.password) {
-      onLogin({ id: credentials.realtor.id, role: 'realtor' });
+      onLogin({ id: credentials.realtor.id, role: 'realtor', username: credentials.realtor.username });
     } else if (username === credentials.contractor.username && password === credentials.contractor.password) {
-      onLogin({ id: credentials.contractor.id, role: 'contractor' });
+      onLogin({ id: credentials.contractor.id, role: 'contractor', username: credentials.contractor.username });
     } else {
       setError('Invalid credentials');
     }
+  };
+
+  const resetForm = () => {
+    setUsername('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
   };
 
   return (
@@ -53,7 +109,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <div className="flex justify-center mb-6">
             <div className="flex rounded-lg bg-gray-100 p-1">
               <button
-                onClick={() => setIsSignUp(false)}
+                onClick={() => {
+                  setIsSignUp(false);
+                  resetForm();
+                }}
                 className={`px-4 py-2 rounded-md transition-colors ${
                   !isSignUp ? 'bg-white shadow-sm' : 'text-gray-600'
                 }`}
@@ -61,7 +120,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 Sign In
               </button>
               <button
-                onClick={() => setIsSignUp(true)}
+                onClick={() => {
+                  setIsSignUp(true);
+                  resetForm();
+                }}
                 className={`px-4 py-2 rounded-md transition-colors ${
                   isSignUp ? 'bg-white shadow-sm' : 'text-gray-600'
                 }`}
@@ -124,6 +186,27 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 />
               </div>
             </div>
+
+            {isSignUp && (
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter email"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">

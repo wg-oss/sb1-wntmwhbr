@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect
+import React, { useState, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { Heart, Users, Home, MessageSquare, Search, ArrowLeft, Wrench, Hammer, Paintbrush, Trees, Sofa, Calendar } from 'lucide-react';
 import { User as ProfileIcon } from 'lucide-react';
@@ -24,13 +24,10 @@ const failingImageUrls: Record<string, string> = {
 
 // Update contractors data
 const updatedContractors: Contractor[] = contractors.map((contractor, index) => {
-  // For contractor c4 (index 3, since array is 0-based)
   if (contractor.id === 'c4') {
-    // Ensure portfolio exists and has at least one project
     const updatedPortfolio = contractor.portfolio.length > 0
       ? contractor.portfolio.map((project, projIndex) => {
           if (projIndex === 0) {
-            // Replace the first image of the first project
             return {
               ...project,
               images: project.images.length > 0
@@ -53,7 +50,6 @@ const updatedContractors: Contractor[] = contractors.map((contractor, index) => 
           },
         ];
 
-    // Ensure posts exists and has at least one post, and set the post image to match the portfolio image
     const updatedPosts = contractor.posts && contractor.posts.length > 0
       ? contractor.posts.map((post, postIndex) => {
           if (postIndex === 0) {
@@ -84,7 +80,6 @@ const updatedContractors: Contractor[] = contractors.map((contractor, index) => 
     };
   }
 
-  // For other contractors, only replace the failing portfolio image URLs
   return {
     ...contractor,
     portfolio: contractor.portfolio.map(project => ({
@@ -103,7 +98,32 @@ interface Message {
   timestamp: string;
 }
 
-// Helper function to calculate "time since" the last message
+interface AppUser {
+  id: string;
+  role: 'realtor' | 'contractor';
+  username?: string;
+  email?: string;
+  password?: string;
+  name: string;
+  photo?: string;
+  company?: string;
+  specialty?: string;
+  specialties?: string[];
+  portfolio?: PortfolioItem[];
+  posts?: Post[];
+  connections?: string[];
+  availability?: {
+    bookedSlots: Array<{
+      date: string;
+      startTime: string;
+      endTime: string;
+      realtorId: string;
+      status: 'confirmed';
+      notes: string;
+    }>;
+  };
+}
+
 const getTimeSince = (timestamp: string): string => {
   const now = new Date();
   const messageDate = new Date(timestamp);
@@ -127,7 +147,7 @@ const getTimeSince = (timestamp: string): string => {
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [activeSection, setActiveSection] = useState<ActiveSection>('feed');
   const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
@@ -141,19 +161,55 @@ function App() {
   const [isSwipeDisabled, setIsSwipeDisabled] = useState(false);
   const [activePopUpCard, setActivePopUpCard] = useState<string | null>(null);
   const [contractorsData, setContractorsData] = useState<Contractor[]>(updatedContractors);
+  const [tempUsers, setTempUsers] = useState<AppUser[]>([]);
 
-  // Scroll to top when activeSection changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeSection]);
 
-  const handleLogin = (userData: { id: string; role: 'realtor' | 'contractor' }) => {
-    const user = userData.role === 'realtor' 
+  const handleLogin = (userData: { id: string; role: 'realtor' | 'contractor'; username?: string; email?: string; password?: string }) => {
+    // Check if this is a sign-up scenario (email and password are present)
+    if (userData.email && userData.password) {
+      // This is a new user from sign-up; use the provided userData directly
+      setCurrentUser({
+        id: userData.id,
+        role: userData.role,
+        username: userData.username,
+        email: userData.email,
+        name: userData.username || 'New User', // Default name for new users
+        photo: 'https://via.placeholder.com/40', // Default photo
+        connections: [], // Default for new users
+        portfolio: [], // Default for contractors
+        posts: [], // Default for new users
+      });
+      setIsAuthenticated(true);
+      return;
+    }
+
+    // Otherwise, this is a manual login; look up the user
+    const predefinedUser = userData.role === 'realtor'
       ? realtors.find(r => r.id === userData.id)
       : contractorsData.find(c => c.id === userData.id);
-    
-    if (user) {
-      setCurrentUser(user);
+
+    if (predefinedUser) {
+      setCurrentUser({ ...predefinedUser, username: userData.username });
+      setIsAuthenticated(true);
+      return;
+    }
+
+    const tempUser = tempUsers.find(u => u.id === userData.id);
+    if (tempUser) {
+      setCurrentUser({
+        id: tempUser.id,
+        role: tempUser.role,
+        username: tempUser.username,
+        email: tempUser.email,
+        name: tempUser.username || 'New User', // Default name for new users
+        photo: 'https://via.placeholder.com/40', // Default photo
+        connections: [], // Default for new users
+        portfolio: [], // Default for contractors
+        posts: [], // Default for new users
+      });
       setIsAuthenticated(true);
     }
   };
@@ -256,12 +312,12 @@ function App() {
   };
 
   if (!isAuthenticated || !currentUser) {
-    return <LoginPage onLogin={handleLogin} />;
+    return <LoginPage onLogin={handleLogin} tempUsers={tempUsers} setTempUsers={setTempUsers} />;
   }
 
   const allUsers = [...contractorsData, ...realtors];
-  const searchResults = searchQuery.trim() !== '' 
-    ? allUsers.filter(user => 
+  const searchResults = searchQuery.trim() !== ''
+    ? allUsers.filter(user =>
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         ('specialty' in user && user.specialty.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -269,10 +325,8 @@ function App() {
       )
     : [];
 
-  // Extract unique specialties from contractors
   const specialties = [...new Set(contractorsData.map((contractor) => contractor.specialty))];
 
-  // Map specialties to icons
   const specialtyIcons: Record<string, React.FC<{ size?: number; className?: string }>> = {
     "Kitchen Remodeling": Hammer,
     "Bathroom Remodeling": Wrench,
@@ -466,7 +520,7 @@ function App() {
                 </div>
               </div>
             )
-          ) : activeSection == 'network' ? (
+          ) : activeSection === 'network' ? (
             <div className="flex-1">
               <NetworkSection
                 currentUser={currentUser}
