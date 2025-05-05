@@ -22,6 +22,8 @@ interface Review {
   rating: number;
   text: string;
   date: string;
+  helpfulCount: number;
+  unhelpfulCount: number;
 }
 
 const ContractorCard: React.FC<ContractorCardProps> = ({
@@ -36,6 +38,11 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showHint, setShowHint] = useState(true);
+
+  const handleWriteReview = () => {
+    // Add your review writing logic here
+    console.log('Write review clicked');
+  };
   const [showPortfolio, setShowPortfolio] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
 
@@ -47,6 +54,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.9,
         text: 'John transformed our kitchen with incredible attention to detail. A true professional!',
         date: '2024-02-15',
+        helpfulCount: 10,
+        unhelpfulCount: 0,
       },
       {
         id: 'r2-c1',
@@ -54,6 +63,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.6,
         text: 'Reliable and skilled. The project timeline was met perfectly.',
         date: '2024-01-20',
+        helpfulCount: 5,
+        unhelpfulCount: 1,
       },
       {
         id: 'r3-c1',
@@ -61,6 +72,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.8,
         text: 'Fantastic work on our home renovation. Highly recommend John!',
         date: '2024-03-05',
+        helpfulCount: 8,
+        unhelpfulCount: 0,
       },
       {
         id: 'r4-c1',
@@ -68,6 +81,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.7,
         text: 'John did an amazing job on our patio. Very impressed with his craftsmanship!',
         date: '2024-04-10',
+        helpfulCount: 12,
+        unhelpfulCount: 0,
       },
     ],
     'c2': [
@@ -77,6 +92,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.7,
         text: "Sarah's plumbing expertise saved our project. Quick and efficient!",
         date: '2024-02-10',
+        helpfulCount: 9,
+        unhelpfulCount: 0,
       },
       {
         id: 'r2-c2',
@@ -84,6 +101,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.9,
         text: 'Outstanding service. Sarah fixed complex issues with ease.',
         date: '2024-01-15',
+        helpfulCount: 11,
+        unhelpfulCount: 0,
       },
       {
         id: 'r3-c2',
@@ -91,6 +110,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.5,
         text: 'Great communication and quality work on our bathroom install.',
         date: '2024-03-12',
+        helpfulCount: 7,
+        unhelpfulCount: 1,
       },
       {
         id: 'r4-c2',
@@ -98,6 +119,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.8,
         text: 'Sarah was fantastic to work with. Our plumbing issues were resolved perfectly!',
         date: '2024-04-15',
+        helpfulCount: 10,
+        unhelpfulCount: 0,
       },
     ],
     'default': [
@@ -107,6 +130,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.8,
         text: 'Excellent work and professionalism. Would collaborate again!',
         date: '2024-02-01',
+        helpfulCount: 8,
+        unhelpfulCount: 0,
       },
       {
         id: 'r2-default',
@@ -114,6 +139,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.7,
         text: 'Solid performance on our recent project. Very satisfied.',
         date: '2024-01-25',
+        helpfulCount: 6,
+        unhelpfulCount: 1,
       },
       {
         id: 'r3-default',
@@ -121,6 +148,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.6,
         text: 'Dependable and skilled. Completed the job to high standards.',
         date: '2024-03-08',
+        helpfulCount: 9,
+        unhelpfulCount: 0,
       },
       {
         id: 'r4-default',
@@ -128,6 +157,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         rating: 4.9,
         text: 'Exceeded expectations on our project. Highly recommended!',
         date: '2024-04-20',
+        helpfulCount: 12,
+        unhelpfulCount: 0,
       },
     ],
   };
@@ -383,74 +414,154 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
       content: (
         <div className="flex flex-col h-full bg-white">
           <div className="p-3 sm:p-4 flex-1 relative flex flex-col max-h-[calc(100%-96px)]">
-            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 sm:p-4 mb-3 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">Client Reviews</h3>
-                <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
-                  <Star size={14} className="text-blue-500" />
-                  <span className="font-medium text-blue-700 text-sm">{contractor.rating.toFixed(1)}</span>
-                </div>
-              </div>
-            </div>
+
             {reviews.length > 0 ? (
               <div className="relative flex-1">
-                <div className="space-y-3">
+                <div className="space-y-4 relative">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent from-0% via-white/80 via-75% to-white to-100% pointer-events-none" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-lg font-semibold text-gray-800">Client Reviews</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-lg font-semibold text-gray-900">{contractor.rating.toFixed(1)}</span>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <svg
+                              key={star}
+                              className={`w-4 h-4 ${star <= Math.round(contractor.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleWriteReview}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1.5"
+                    >
+                      Write a review
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </button>
+                  </div>
                   {reviews.slice(0, 2).map((review) => {
                     const reviewer = allUsers.find((user) => user.id === review.reviewerId);
                     const isMutualConnection = (currentUser.connections || []).some(
                       (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
                     );
                     return (
-                      <div 
-                        key={review.id} 
-                        className="group relative"
-                      >
-                        <div className="absolute inset-0 bg-blue-50 rounded-lg transform scale-[0.98] opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-200" />
-                        <div className="relative p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 font-medium flex-shrink-0 group-hover:bg-blue-100 transition-colors">
-                              {reviewer?.name?.[0] || 'A'}
+                      <div key={review.id} className="bg-white rounded-xl shadow-sm p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                              <span className="text-2xl font-bold text-gray-600">{reviewer?.name?.[0] || 'A'}</span>
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-gray-800 text-sm">{reviewer?.name || 'Anonymous'}</span>
-                                {isMutualConnection && (
-                                  <span className="flex items-center gap-0.5 text-xs text-blue-500 bg-white px-1.5 py-0.5 rounded-full flex-shrink-0 group-hover:bg-blue-100 transition-colors">
-                                    <Users size={10} />
-                                    Mutual
-                                  </span>
-                                )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <h4 className="font-medium text-gray-900 text-lg">{reviewer?.name || 'Anonymous'}</h4>
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <svg
+                                      key={star}
+                                      className={`w-5 h-5 ${star <= Math.round(review.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1 mt-0.5">
-                                <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                                <span className="font-medium text-gray-700 text-xs">{Math.round(review.rating)}/5</span>
+                              <div className="flex items-center gap-2">
+                                <button className="text-sm text-gray-500 hover:text-gray-700">
+                                  {review.helpfulCount} Helpful
+                                </button>
+                                <button className="text-sm text-gray-500 hover:text-gray-700">
+                                  {review.unhelpfulCount} Unhelpful
+                                </button>
+                              </div>
+                            </div>
+                            <div className="mt-2 text-gray-600">
+                              <p className="text-base leading-relaxed">{review.text}</p>
+                              <div className="mt-2 text-sm text-gray-500">
+                                {new Date(review.date).toLocaleDateString('en-US', {
+                                  month: 'long',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
                               </div>
                             </div>
                           </div>
-                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{review.text}</p>
                         </div>
                       </div>
                     );
                   })}
-                  {reviews.length > 2 && (
-                    <div className="relative h-12">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent from-0% via-white/80 via-50% to-white to-100% pointer-events-none" />
-                      <div className="relative px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 font-medium flex-shrink-0">
-                            {allUsers.find((user) => user.id === reviews[2].reviewerId)?.name?.[0] || 'A'}
+                  {reviews.slice(0, 3).map((review, index) => {
+                    if (index === 2) {
+                      return (
+                        <div key={review.id} className="bg-white rounded-xl shadow-sm p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0">
+                              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                                <span className="text-2xl font-bold text-gray-600">{allUsers.find((user) => user.id === review.reviewerId)?.name?.[0] || 'A'}</span>
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <h4 className="font-medium text-gray-900 text-lg">{allUsers.find((user) => user.id === review.reviewerId)?.name || 'Anonymous'}</h4>
+                                  <div className="flex items-center gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <svg
+                                        key={star}
+                                        className={`w-5 h-5 ${star <= Math.round(review.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                      </svg>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button className="text-sm text-gray-500 hover:text-gray-700">
+                                    {review.helpfulCount} Helpful
+                                  </button>
+                                  <button className="text-sm text-gray-500 hover:text-gray-700">
+                                    {review.unhelpfulCount} Unhelpful
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="mt-2 text-gray-600">
+                                <p className="text-base leading-relaxed line-clamp-2">{review.text}</p>
+                                <div className="mt-2 text-sm text-gray-500">
+                                  {new Date(review.date).toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <span className="font-medium text-gray-800 text-sm">
-                            {allUsers.find((user) => user.id === reviews[2].reviewerId)?.name || 'Anonymous'}
-                          </span>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      );
+                    }
+                    return null;
+                  })}
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No reviews available.</p>
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-lg">No reviews available yet</p>
+                <p className="mt-2 text-gray-400">Be the first to leave a review</p>
+              </div>
             )}
           </div>
           <div className="p-3 sm:p-4 border-t bg-white relative z-10">
