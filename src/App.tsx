@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Heart, Users, Home, MessageSquare, Search, ArrowLeft, Wrench, Hammer, Paintbrush, Trees, Sofa, Calendar } from 'lucide-react';
+import { Heart, Users, Home, MessageSquare, Search, ArrowLeft, Wrench, Hammer, Trees, Sofa, Calendar } from 'lucide-react';
 import { User as ProfileIcon } from 'lucide-react';
 import ContractorCard from './components/ContractorCard';
 import NetworkSection from './components/NetworkSection';
@@ -10,9 +10,10 @@ import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import ScheduleMeeting from './components/ScheduleMeeting';
 import MeetingManagementPage from './components/MeetingManagementPage';
+import ContractorPreferences from './components/ContractorPreferences';
 import { contractors, realtors } from './data/users';
 import { posts as initialPosts } from './data/posts';
-import { Contractor, User, Post, PortfolioItem } from './types';
+import { User, Contractor, Realtor, Connection, MeetingRequest, PortfolioItem, Post, BookedSlot } from './types';
 
 // Define the replacement URLs for portfolio images
 const failingImageUrls: Record<string, string> = {
@@ -22,24 +23,14 @@ const failingImageUrls: Record<string, string> = {
     'https://images.pexels.com/photos/279607/pexels-photo-279607.jpeg?auto=compress&cs=tinysrgb&w=500&h=500 possibili fit=crop',
 };
 
-// Update contractors data
-const updatedContractors: Contractor[] = contractors.map((contractor, index) => {
+// Update contractors data with proper type assertions
+const updatedContractors: Contractor[] = contractors.map((contractor) => {
   if (contractor.id === 'c4') {
     const updatedPortfolio = contractor.portfolio.length > 0
-      ? contractor.portfolio.map((project, projIndex) => {
-          if (projIndex === 0) {
-            return {
-              ...project,
-              images: project.images.length > 0
-                ? [
-                    'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop',
-                    ...project.images.slice(1),
-                  ]
-                : ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'],
-            };
-          }
-          return project;
-        })
+      ? contractor.portfolio.map((project) => ({
+          ...project,
+          images: project.images.map(image => failingImageUrls[image] || image),
+        }))
       : [
           {
             id: 'proj1-c4',
@@ -51,15 +42,11 @@ const updatedContractors: Contractor[] = contractors.map((contractor, index) => 
         ];
 
     const updatedPosts = contractor.posts && contractor.posts.length > 0
-      ? contractor.posts.map((post, postIndex) => {
-          if (postIndex === 0) {
-            return {
-              ...post,
-              images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'],
-            };
-          }
-          return post;
-        })
+      ? contractor.posts.map((post) => ({
+          ...post,
+          type: post.type as 'project-update' | 'certification' | 'general' | 'project-showcase',
+          images: post.images.map(image => failingImageUrls[image] || image),
+        }))
       : [
           {
             id: `p1-c4`,
@@ -67,7 +54,7 @@ const updatedContractors: Contractor[] = contractors.map((contractor, index) => 
             content: 'Check out my latest home renovation project!',
             images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'],
             createdAt: '2024-01-15T10:00:00Z',
-            type: 'project-showcase',
+            type: 'project-showcase' as const,
             likes: [],
             comments: [],
           },
@@ -77,7 +64,7 @@ const updatedContractors: Contractor[] = contractors.map((contractor, index) => 
       ...contractor,
       portfolio: updatedPortfolio,
       posts: updatedPosts,
-    };
+    } as Contractor;
   }
 
   return {
@@ -86,9 +73,10 @@ const updatedContractors: Contractor[] = contractors.map((contractor, index) => 
       ...project,
       images: project.images.map(image => failingImageUrls[image] || image),
     })),
-  };
+  } as Contractor;
 });
 
+// Update ActiveSection type to include all possible values
 type ActiveSection = 'feed' | 'swipe' | 'network' | 'profile' | 'search' | 'messages' | 'viewProfile';
 
 interface Message {
@@ -98,30 +86,32 @@ interface Message {
   timestamp: string;
 }
 
+// Update AppUser interface to include password
 interface AppUser {
   id: string;
   role: 'realtor' | 'contractor';
   username?: string;
-  email?: string;
+  email: string;
   password?: string;
   name: string;
-  photo?: string;
-  company?: string;
+  photo: string;
+  company: string;
   specialty?: string;
   specialties?: string[];
-  portfolio?: PortfolioItem[];
-  posts?: Post[];
-  connections?: string[];
+  connections: Connection[];
+  portfolio: PortfolioItem[];
+  posts: Post[];
   availability?: {
-    bookedSlots: Array<{
-      date: string;
-      startTime: string;
-      endTime: string;
-      realtorId: string;
-      status: 'confirmed';
-      notes: string;
-    }>;
+    workingHours: { start: string; end: string };
+    workingDays: number[];
+    meetingDuration: number;
+    bookedSlots: BookedSlot[];
   };
+  certifications?: string[];
+  bio?: string;
+  yearsExperience?: number;
+  pendingMeetings?: MeetingRequest[];
+  rating?: number;
 }
 
 const getTimeSince = (timestamp: string): string => {
@@ -145,6 +135,50 @@ const getTimeSince = (timestamp: string): string => {
   }
 };
 
+// Update helper function to properly handle role type
+const convertAppUserToUser = (appUser: AppUser): User => {
+  if (appUser.role === 'contractor') {
+    const contractor: Contractor = {
+      id: appUser.id,
+      name: appUser.name,
+      email: appUser.email,
+      photo: appUser.photo,
+      specialty: appUser.specialty || 'General Contractor',
+      certifications: appUser.certifications || [],
+      bio: appUser.bio || '',
+      yearsExperience: appUser.yearsExperience || 0,
+      connections: appUser.connections || [],
+      posts: appUser.posts || [],
+      portfolio: appUser.portfolio || [],
+      availability: appUser.availability || {
+        workingHours: { start: '09:00', end: '17:00' },
+        workingDays: [1, 2, 3, 4, 5],
+        meetingDuration: 30,
+        bookedSlots: []
+      },
+      pendingMeetings: appUser.pendingMeetings || [],
+      role: 'contractor',
+      company: appUser.company,
+      rating: appUser.rating || 0
+    };
+    return contractor;
+  } else {
+    const realtor: Realtor = {
+      id: appUser.id,
+      name: appUser.name,
+      email: appUser.email,
+      photo: appUser.photo,
+      company: appUser.company,
+      specialties: appUser.specialties || [],
+      bio: appUser.bio || '',
+      yearsExperience: appUser.yearsExperience || 0,
+      connections: appUser.connections || [],
+      role: 'realtor'
+    };
+    return realtor;
+  }
+};
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
@@ -153,7 +187,6 @@ function App() {
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSchedule, setShowSchedule] = useState(false);
-  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [scheduleContractor, setScheduleContractor] = useState<Contractor | null>(null);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [previousSection, setPreviousSection] = useState<ActiveSection>('feed');
@@ -162,52 +195,111 @@ function App() {
   const [activePopUpCard, setActivePopUpCard] = useState<string | null>(null);
   const [contractorsData, setContractorsData] = useState<Contractor[]>(updatedContractors);
   const [tempUsers, setTempUsers] = useState<AppUser[]>([]);
+  const [contractorPreferences, setContractorPreferences] = useState<{
+    distance: number;
+    specialty: string;
+    experience: number;
+  }>({
+    distance: 50,
+    specialty: 'All',
+    experience: 5,
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeSection]);
 
   const handleLogin = (userData: { id: string; role: 'realtor' | 'contractor'; username?: string; email?: string; password?: string }) => {
-    // Check if this is a sign-up scenario (email and password are present)
     if (userData.email && userData.password) {
-      // This is a new user from sign-up; use the provided userData directly
-      setCurrentUser({
+      const baseUser: AppUser = {
         id: userData.id,
         role: userData.role,
         username: userData.username,
         email: userData.email,
-        name: userData.username || 'New User', // Default name for new users
-        connections: [], // Default for new users
-        portfolio: [], // Default for contractors
-        posts: [], // Default for new users
-      });
+        name: userData.username || 'New User',
+        photo: '/default-avatar.png',
+        company: 'New Company',
+        connections: [],
+        portfolio: [],
+        posts: [],
+        specialty: userData.role === 'contractor' ? 'General Contractor' : undefined,
+        specialties: userData.role === 'realtor' ? [] : undefined,
+        certifications: userData.role === 'contractor' ? [] : undefined,
+        bio: '',
+        yearsExperience: 0,
+        pendingMeetings: [],
+        rating: 0,
+        availability: {
+          workingHours: { start: '09:00', end: '17:00' },
+          workingDays: [1, 2, 3, 4, 5],
+          meetingDuration: 30,
+          bookedSlots: []
+        }
+      };
+      setCurrentUser(baseUser);
       setIsAuthenticated(true);
       return;
     }
 
-    // Otherwise, this is a manual login; look up the user
     const predefinedUser = userData.role === 'realtor'
       ? realtors.find(r => r.id === userData.id)
       : contractorsData.find(c => c.id === userData.id);
 
     if (predefinedUser) {
-      setCurrentUser({ ...predefinedUser, username: userData.username });
+      const connections = predefinedUser.connections?.map(c => typeof c === 'string' ? {
+        id: c,
+        userId: userData.id,
+        connectionId: c,
+        status: 'pending' as const,
+        createdAt: new Date().toISOString(),
+        workHistory: {
+          relationship: 'project-collaboration' as const
+        }
+      } : c) || [];
+      const user: AppUser = {
+        ...predefinedUser,
+        username: userData.username,
+        connections,
+        photo: predefinedUser.photo || '/default-avatar.png',
+        company: predefinedUser.company || 'New Company',
+        specialty: userData.role === 'contractor' ? (predefinedUser as Contractor).specialty || 'General Contractor' : undefined,
+        specialties: userData.role === 'realtor' ? (predefinedUser as Realtor).specialties || [] : undefined,
+        portfolio: userData.role === 'contractor' ? (predefinedUser as Contractor).portfolio || [] : [],
+        posts: userData.role === 'contractor' ? (predefinedUser as Contractor).posts || [] : [],
+      };
+      setCurrentUser(user);
       setIsAuthenticated(true);
       return;
     }
 
     const tempUser = tempUsers.find(u => u.id === userData.id);
     if (tempUser) {
-      setCurrentUser({
+      const newUser: AppUser = {
         id: tempUser.id,
         role: tempUser.role,
         username: tempUser.username,
         email: tempUser.email,
-        name: tempUser.username || 'New User', // Default name for new users
-        connections: [], // Default for new users
-        portfolio: [], // Default for contractors
-        posts: [], // Default for new users
-      });
+        name: tempUser.username || 'New User',
+        photo: '/default-avatar.png',
+        company: 'New Company',
+        connections: [],
+        portfolio: [],
+        posts: [],
+        specialty: tempUser.role === 'contractor' ? 'General Contractor' : undefined,
+        specialties: tempUser.role === 'realtor' ? [] : undefined,
+        certifications: tempUser.role === 'contractor' ? [] : undefined,
+        bio: '',
+        yearsExperience: 0,
+        pendingMeetings: [],
+        rating: 0,
+        availability: {
+          workingHours: { start: '09:00', end: '17:00' },
+          workingDays: [1, 2, 3, 4, 5],
+          meetingDuration: 30,
+          bookedSlots: []
+        }
+      };
+      setCurrentUser(newUser);
       setIsAuthenticated(true);
     }
   };
@@ -218,18 +310,57 @@ function App() {
     setActiveSection('feed');
   };
 
-  const handleMessage = (contractor: Contractor) => {
-    setSelectedContractor(contractor);
+  const handleMessage = (user: User) => {
+    if (user.role === 'contractor') {
+      const contractor: Contractor = {
+        ...user,
+        certifications: user.certifications || [],
+        bio: user.bio || '',
+        yearsExperience: user.yearsExperience || 0,
+        pendingMeetings: user.pendingMeetings || [],
+        rating: user.rating || 0,
+        connections: user.connections || [],
+        posts: user.posts || [],
+        portfolio: user.portfolio || [],
+        availability: user.availability || {
+          workingHours: { start: '09:00', end: '17:00' },
+          workingDays: [1, 2, 3, 4, 5],
+          meetingDuration: 30,
+          bookedSlots: []
+        }
+      };
+      setSelectedContractor(contractor);
+      setActiveSection('messages' as ActiveSection);
+    }
   };
 
-  const handleSchedule = (contractor: Contractor) => {
-    setScheduleContractor(contractor);
-    setShowSchedule(true);
+  const handleSchedule = (user: User) => {
+    if (user.role === 'contractor') {
+      const contractor: Contractor = {
+        ...user,
+        certifications: user.certifications || [],
+        bio: user.bio || '',
+        yearsExperience: user.yearsExperience || 0,
+        pendingMeetings: user.pendingMeetings || [],
+        rating: user.rating || 0,
+        connections: user.connections || [],
+        posts: user.posts || [],
+        portfolio: user.portfolio || [],
+        availability: user.availability || {
+          workingHours: { start: '09:00', end: '17:00' },
+          workingDays: [1, 2, 3, 4, 5],
+          meetingDuration: 30,
+          bookedSlots: []
+        }
+      };
+      setScheduleContractor(contractor);
+      setShowSchedule(true);
+    }
   };
 
   const handleScheduleMeeting = (slot: { date: string; startTime: string; endTime: string; realtorId: string; status: 'confirmed' }) => {
     if (scheduleContractor?.availability) {
-      const updatedContractor = {
+      const updatedContractor: Contractor = {
         ...scheduleContractor,
         availability: {
           ...scheduleContractor.availability,
@@ -237,13 +368,26 @@ function App() {
             ...scheduleContractor.availability.bookedSlots,
             { ...slot, notes: '' },
           ],
-        },
+        }
       };
       setContractorsData(prev =>
         prev.map(c => (c.id === scheduleContractor.id ? updatedContractor : c))
       );
       if (currentUser?.id === scheduleContractor.id) {
-        setCurrentUser(updatedContractor);
+        const updatedUser: AppUser = {
+          ...currentUser,
+          availability: updatedContractor.availability,
+          pendingMeetings: updatedContractor.pendingMeetings,
+          rating: updatedContractor.rating,
+          specialty: updatedContractor.specialty,
+          certifications: updatedContractor.certifications,
+          bio: updatedContractor.bio,
+          yearsExperience: updatedContractor.yearsExperience,
+          connections: updatedContractor.connections,
+          posts: updatedContractor.posts,
+          portfolio: updatedContractor.portfolio
+        };
+        setCurrentUser(updatedUser);
       }
     }
     setShowSchedule(false);
@@ -253,7 +397,7 @@ function App() {
   const handleViewProfile = (user: User, fromSection: ActiveSection) => {
     setViewingUser(user);
     setPreviousSection(fromSection);
-    setActiveSection('viewProfile');
+    setActiveSection('viewProfile' as ActiveSection);
   };
 
   const handleBackFromProfile = () => {
@@ -267,14 +411,37 @@ function App() {
 
   const handleAddProject = (project: PortfolioItem) => {
     if (currentUser?.role === 'contractor') {
-      const updatedContractor = {
-        ...currentUser,
-        portfolio: [...(currentUser as Contractor).portfolio, project],
+      const updatedContractor: Contractor = {
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+        photo: currentUser.photo,
+        specialty: currentUser.specialty || 'General Contractor',
+        certifications: currentUser.certifications || [],
+        bio: currentUser.bio || '',
+        yearsExperience: currentUser.yearsExperience || 0,
+        connections: currentUser.connections || [],
+        posts: currentUser.posts || [],
+        portfolio: [...currentUser.portfolio, project],
+        availability: currentUser.availability || {
+          workingHours: { start: '09:00', end: '17:00' },
+          workingDays: [1, 2, 3, 4, 5],
+          meetingDuration: 30,
+          bookedSlots: []
+        },
+        pendingMeetings: currentUser.pendingMeetings || [],
+        role: 'contractor',
+        company: currentUser.company,
+        rating: currentUser.rating || 0
       };
       setContractorsData(prev =>
         prev.map(c => (c.id === currentUser.id ? updatedContractor : c))
       );
-      setCurrentUser(updatedContractor);
+      const updatedUser: AppUser = {
+        ...currentUser,
+        portfolio: updatedContractor.portfolio
+      };
+      setCurrentUser(updatedUser);
     }
   };
 
@@ -309,8 +476,34 @@ function App() {
     setActivePopUpCard(isOpen ? contractorId : null);
   };
 
+  const handlePreferencesChange = (preferences: {
+    distance: number;
+    specialty: string;
+    experience: number;
+  }): void => {
+    setContractorPreferences(preferences);
+    // For future implementation of contractor filtering
+    console.log('Preferences updated:', contractorPreferences);
+  };
+
   if (!isAuthenticated || !currentUser) {
-    return <LoginPage onLogin={handleLogin} tempUsers={tempUsers} setTempUsers={setTempUsers} />;
+    return <LoginPage 
+      onLogin={handleLogin} 
+      tempUsers={tempUsers.map(user => ({
+        id: user.id,
+        username: user.username || '',
+        email: user.email || '',
+        password: user.password || '',
+        role: user.role,
+      }))} 
+      setTempUsers={setTempUsers as React.Dispatch<React.SetStateAction<{
+        id: string;
+        username: string;
+        email: string;
+        password: string;
+        role: 'realtor' | 'contractor';
+      }[]>>} 
+    />;
   }
 
   const allUsers = [...contractorsData, ...realtors];
@@ -325,12 +518,12 @@ function App() {
 
   const specialties = [...new Set(contractorsData.map((contractor) => contractor.specialty))];
 
-  const specialtyIcons: Record<string, React.FC<{ size?: number; className?: string }>> = {
-    "Kitchen Remodeling": Hammer,
-    "Bathroom Remodeling": Wrench,
-    "Custom Carpentry": Hammer,
-    "Interior Design & Renovation": Sofa,
-    "Outdoor Living Spaces": Trees,
+  const specialtyIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+    "Kitchen Remodeling": Hammer as React.ComponentType<{ size?: number; className?: string }>,
+    "Bathroom Remodeling": Wrench as React.ComponentType<{ size?: number; className?: string }>,
+    "Custom Carpentry": Hammer as React.ComponentType<{ size?: number; className?: string }>,
+    "Interior Design & Renovation": Sofa as React.ComponentType<{ size?: number; className?: string }>,
+    "Outdoor Living Spaces": Trees as React.ComponentType<{ size?: number; className?: string }>,
   };
 
   const conversations: { userId: string; chats: { recipient: User; messages: Message[] }[] }[] = [
@@ -366,7 +559,7 @@ function App() {
             {
               id: 'm4',
               senderId: 'c2',
-              content: 'Hi Emma, yes I’m available! Let’s discuss the details.',
+              content: 'Hi Emma, yes I\'m available! Let\'s discuss the details.',
               timestamp: '2025-04-26T03:13:00Z',
             },
           ],
@@ -405,13 +598,13 @@ function App() {
             {
               id: 'm8',
               senderId: 'c1',
-              content: 'Hey Michael, I saw your post about investment properties. I’d love to collaborate on a renovation!',
+              content: 'Hey Michael, I saw your post about investment properties. I\'d love to collaborate on a renovation!',
               timestamp: '2025-04-27T10:00:00Z',
             },
             {
               id: 'm9',
               senderId: 'r2',
-              content: 'Hi John, that sounds great! Let’s set up a meeting to discuss.',
+              content: 'Hi John, that sounds great! Let\'s set up a meeting to discuss.',
               timestamp: '2025-04-27T10:30:00Z',
             },
           ],
@@ -426,55 +619,94 @@ function App() {
     return posts.filter(post => post.userId === user.id);
   };
 
+  const renderContractorCard = (contractor: Contractor) => {
+    // Convert AppUser to User based on role
+    const user: User = currentUser.role === 'contractor' 
+      ? {
+          ...currentUser,
+          specialty: currentUser.specialty || 'General Contractor',
+          certifications: currentUser.certifications || [],
+          connections: currentUser.connections || [],
+          posts: currentUser.posts || [],
+          portfolio: currentUser.portfolio || [],
+          availability: currentUser.availability || {
+            workingHours: { start: '09:00', end: '17:00' },
+            workingDays: [1, 2, 3, 4, 5],
+            meetingDuration: 30,
+            bookedSlots: []
+          }
+        } as Contractor
+      : {
+          ...currentUser,
+          specialties: currentUser.specialties || [],
+          connections: currentUser.connections || []
+        } as User;
+
+    return (
+      <ContractorCard
+        contractor={contractor}
+        currentUser={user}
+        onSchedule={() => handleSchedule(contractor)}
+        onMessage={() => handleMessage(contractor)}
+        onViewProfile={() => handleViewProfile(contractor, 'swipe' as ActiveSection)}
+        onDisableSwipe={handleDisableSwipe}
+        onEnableSwipe={handleEnableSwipe}
+        onPopUpChange={(isOpen) => handlePopUpChange(contractor.id, isOpen)}
+      />
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 relative">
-      <header className="bg-white shadow-sm sticky top-0 z-40 h-[56px]">
-        <div className="px-4 py-4 flex justify-between items-center">
-          {activeSection === 'messages' ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveSection('feed')}
-                className="p-1 hover:bg-gray-100 rounded-full"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <h1 className="text-xl font-semibold">Messages</h1>
-            </div>
-          ) : activeSection === 'viewProfile' ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleBackFromProfile}
-                className="p-1 hover:bg-gray-100 rounded-full"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <h1 className="text-xl font-semibold">{viewingUser?.name}</h1>
-            </div>
-          ) : (
-            <h1 className="text-2xl font-bold text-blue-500 font-poppins tracking-tight">
-              ContractMatch
-            </h1>
-          )}
-          <div className="flex items-center gap-4">
-            {(activeSection === 'feed' || activeSection === 'network' || activeSection === 'profile' || activeSection === 'search' || activeSection === 'swipe') && (
-              <button
-                onClick={() => setActiveSection('messages')}
-                className={`p-2 rounded-full ${activeSection === 'messages' ? 'text-blue-500' : 'text-gray-600'} hover:text-gray-800`}
-              >
-                <MessageSquare size={20} />
-              </button>
+      {activeSection !== 'swipe' || currentUser.role === 'contractor' ? (
+        <header className="bg-white shadow-sm sticky top-0 z-40 h-[56px]">
+          <div className="px-4 py-4 flex justify-between items-center">
+            {activeSection === 'messages' ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveSection('feed')}
+                  className="p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h1 className="text-xl font-semibold">Messages</h1>
+              </div>
+            ) : activeSection === 'viewProfile' ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleBackFromProfile}
+                  className="p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h1 className="text-xl font-semibold">{viewingUser?.name}</h1>
+              </div>
+            ) : (
+              <h1 className="text-2xl font-bold text-blue-500 font-poppins tracking-tight">
+                ContractMatch
+              </h1>
             )}
+            <div className="flex items-center gap-4">
+              {(activeSection === 'feed' || activeSection === 'network' || activeSection === 'profile' || activeSection === 'search' || activeSection === 'swipe' || activeSection === 'messages') && (
+                <button
+                  onClick={() => setActiveSection('messages' as ActiveSection)}
+                  className={`p-2 rounded-full ${activeSection === 'messages' ? 'text-blue-500' : 'text-gray-600'} hover:text-gray-800`}
+                >
+                  <MessageSquare size={20} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      ) : null}
 
-      <main className="pb-[65px]">
+      <main className={`${activeSection === 'swipe' && currentUser.role !== 'contractor' ? '' : 'pb-[65px]'}`}>
         <div className="max-w-5xl mx-auto px-4 py-8">
           {activeSection === 'feed' ? (
             <Feed
-              currentUser={currentUser}
+              currentUser={convertAppUserToUser(currentUser)}
               posts={posts}
-              onViewProfile={(user) => handleViewProfile(user, 'feed')}
+              onViewProfile={(user) => handleViewProfile(user, 'feed' as ActiveSection)}
               onPost={handlePost}
               allUsers={allUsers}
               onConnect={handleConnect}
@@ -486,43 +718,40 @@ function App() {
                 allUsers={allUsers}
               />
             ) : (
-              <div 
-                {...swipeHandlers}
-                className="fixed left-0 right-0 top-[56px] bottom-[65px] overflow-hidden z-10"
-              >
-                <div
-                  className="h-full transition-transform duration-500 ease-in-out"
-                  style={{ transform: `translateY(-${currentProfileIndex * 100}%)` }}
+              <>
+                <ContractorPreferences
+                  onPreferencesChange={handlePreferencesChange}
+                  specialties={specialties}
+                />
+                <div 
+                  {...swipeHandlers}
+                  className="fixed left-0 right-0 top-0 bottom-[65px] overflow-hidden z-10"
                 >
-                  {contractorsData.map((contractor, index) => {
-                    const isActivePopUp = activePopUpCard === contractor.id;
-                    return (
-                      <div
-                        key={contractor.id}
-                        className="h-full flex items-center justify-center"
-                        style={{ zIndex: isActivePopUp ? 100 : 0 }}
-                      >
-                        <ContractorCard
-                          contractor={contractor}
-                          currentUser={currentUser}
-                          onMessage={() => handleMessage(contractor)}
-                          onSchedule={() => handleSchedule(contractor)}
-                          onViewProfile={() => handleViewProfile(contractor, 'swipe')}
-                          onDisableSwipe={handleDisableSwipe}
-                          onEnableSwipe={handleEnableSwipe}
-                          onPopUpChange={(isOpen) => handlePopUpChange(contractor.id, isOpen)}
-                        />
-                      </div>
-                    );
-                  })}
+                  <div
+                    className="h-full transition-transform duration-500 ease-in-out"
+                    style={{ transform: `translateY(-${currentProfileIndex * 100}%)` }}
+                  >
+                    {contractorsData.map((contractor) => {
+                      const isActivePopUp = activePopUpCard === contractor.id;
+                      return (
+                        <div
+                          key={contractor.id}
+                          className="h-full flex items-center justify-center"
+                          style={{ zIndex: isActivePopUp ? 100 : 0 }}
+                        >
+                          {renderContractorCard(contractor)}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              </>
             )
           ) : activeSection === 'network' ? (
             <div className="flex-1">
               <NetworkSection
-                currentUser={currentUser}
-                onViewProfile={(user) => handleViewProfile(user, 'network')}
+                currentUser={convertAppUserToUser(currentUser)}
+                onViewProfile={(user) => handleViewProfile(user, 'network' as ActiveSection)}
               />
             </div>
           ) : activeSection === 'search' ? (
@@ -540,7 +769,7 @@ function App() {
                     <div
                       key={user.id}
                       className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleViewProfile(user, 'search')}
+                      onClick={() => handleViewProfile(user, 'search' as ActiveSection)}
                     >
                       <img
                         src={user.photo || 'https://via.placeholder.com/40'}
@@ -579,18 +808,18 @@ function App() {
             </div>
           ) : activeSection === 'profile' ? (
             <ProfileSection
-              currentUser={currentUser}
+              currentUser={convertAppUserToUser(currentUser)}
               onLogout={handleLogout}
-              posts={getUserPosts(currentUser)}
+              posts={getUserPosts(convertAppUserToUser(currentUser))}
               allUsers={allUsers}
-              onViewProfile={(user) => handleViewProfile(user, 'profile')}
+              onViewProfile={(user) => handleViewProfile(user, 'profile' as ActiveSection)}
               onAddProject={handleAddProject}
             />
           ) : activeSection === 'messages' ? (
             <div className="space-y-4">
-              {userConversations.map((chat, index) => (
+              {userConversations.map((chat) => (
                 <div
-                  key={index}
+                  key={chat.recipient.id}
                   className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-gray-50"
                   onClick={() => handleMessage(chat.recipient)}
                 >
@@ -612,12 +841,12 @@ function App() {
             </div>
           ) : activeSection === 'viewProfile' && viewingUser ? (
             <ProfileSection
-              currentUser={currentUser}
+              currentUser={convertAppUserToUser(currentUser)}
               viewingUser={viewingUser}
               onBack={handleBackFromProfile}
               posts={getUserPosts(viewingUser)}
               allUsers={allUsers}
-              onViewProfile={(user) => handleViewProfile(user, 'viewProfile')}
+              onViewProfile={(user) => handleViewProfile(user, 'viewProfile' as ActiveSection)}
               onAddProject={handleAddProject}
             />
           ) : null}
@@ -661,10 +890,10 @@ function App() {
 
       {selectedContractor && (
         <MessagingInterface
-          currentUser={currentUser}
+          currentUser={convertAppUserToUser(currentUser)}
           recipient={selectedContractor}
           onClose={() => setSelectedContractor(null)}
-          onViewProfile={(user) => handleViewProfile(user, 'messages')}
+          onViewProfile={(user) => handleViewProfile(user, 'messages' as ActiveSection)}
           initialMessages={
             userConversations.find(chat => chat.recipient.id === selectedContractor.id)?.messages || []
           }

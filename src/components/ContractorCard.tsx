@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Star, MessageCircle, Folder, Calendar, Users, X } from 'lucide-react';
+import { Star, Folder, Calendar, Users, X, MessageCircle } from 'lucide-react';
 import { Contractor, User } from '../types';
 import { realtors, contractors } from '../data/users';
 import ReactDOM from 'react-dom';
@@ -8,10 +8,9 @@ import ReactDOM from 'react-dom';
 interface ContractorCardProps {
   contractor: Contractor;
   currentUser: User;
-  onMessage: () => void;
   onSchedule: () => void;
+  onMessage: () => void;
   onViewProfile?: () => void;
-  isTopCard?: boolean;
   onDisableSwipe?: () => void;
   onEnableSwipe?: () => void;
   onPopUpChange?: (isOpen: boolean) => void;
@@ -28,8 +27,8 @@ interface Review {
 const ContractorCard: React.FC<ContractorCardProps> = ({
   contractor,
   currentUser,
-  onMessage,
   onSchedule,
+  onMessage,
   onViewProfile,
   onDisableSwipe,
   onEnableSwipe,
@@ -64,7 +63,7 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
         date: '2024-03-05',
       },
       {
-        id: ' *"r4-c1"',
+        id: 'r4-c1',
         reviewerId: 'r4',
         rating: 4.7,
         text: 'John did an amazing job on our patio. Very impressed with his craftsmanship!',
@@ -75,8 +74,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
       {
         id: 'r1-c2',
         reviewerId: 'r1',
-        rating: '4.7',
-        text: 'Sarah’s plumbing expertise saved our project. Quick and efficient!',
+        rating: 4.7,
+        text: "Sarah's plumbing expertise saved our project. Quick and efficient!",
         date: '2024-02-10',
       },
       {
@@ -147,24 +146,25 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
     return shuffled;
   }, [contractor.id]);
 
-  const contractorConnections = (contractor.connections || []).filter(
-    (conn) => conn.status === 'accepted'
-  ).length;
+  const contractorConnections = (contractor.connections || [])
+    .filter((conn) => conn.status === 'accepted')
+    .length;
 
-  const incomingUserConnectionIds = allUsers
-    .flatMap((user) => user.connections || [])
-    .filter((conn) => conn.status === 'accepted' && conn.connectionId === currentUser.id)
-    .map((conn) => conn.userId);
-  const outgoingUserConnectionIds = (currentUser.connections || [])
-    .filter((conn) => conn.status === 'accepted' && conn.connectionId !== contractor.id)
-    .map((conn) => conn.connectionId);
-  const userConnectionIds = [...new Set([...outgoingUserConnectionIds, ...incomingUserConnectionIds])];
-  const contractorConnectionIds = (contractor.connections || [])
-    .filter((conn) => conn.status === 'accepted' && conn.connectionId !== currentUser.id)
-    .map((conn) => conn.connectionId);
-  const mutualConnections = contractorConnectionIds.filter((id) =>
-    userConnectionIds.includes(id)
-  ).length;
+  // Get Emma's direct connections (the people she's connected to)
+  const emmaConnections = (currentUser.connections || [])
+    .filter(conn => conn.status === 'accepted')
+    .map(conn => conn.connectionId);
+
+  // Get all users that the contractor is connected to
+  const contractorConnectionsList = (contractor.connections || [])
+    .filter(conn => conn.status === 'accepted')
+    .map(conn => conn.connectionId);
+
+  // Count mutual connections: people who are connected to Emma's connections
+  // (i.e., if contractor is connected to John or Michael, they are mutual)
+  const mutualConnections = contractorConnectionsList
+    .filter(id => emmaConnections.includes(id))
+    .length;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -242,14 +242,14 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col px-0 pt-4 pb-0">
               <div className="flex-1" />
               <div className="-mt-36 px-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4 mb-2">
                   <div className="flex items-center gap-1">
                     <Star size={16} className="text-yellow-400 fill-yellow-400" />
                     <span className="text-white">{contractor.rating.toFixed(1)}</span>
                   </div>
-                  <button
+                  <button 
                     onClick={onViewProfile}
-                    className="text-xl font-bold text-white hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                    className="text-2xl font-bold text-white hover:underline focus:outline-none"
                   >
                     {contractor.name}
                   </button>
@@ -271,15 +271,17 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                 {contractorConnections > 0 && (
                   <div className="flex items-center gap-2 mt-2 mb-4">
                     <Users size={16} className="text-white" />
-                    <span className="text-white text-sm">
-                      {contractorConnections} Connection{contractorConnections !== 1 ? 's' : ''}
-                    </span>
-                    {mutualConnections > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-blue-300 bg-blue-900 bg-opacity-50 px-2 py-0.5 rounded-full">
-                        <Users size={12} />
-                        {mutualConnections} Mutual
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-sm">
+                        {contractorConnections} Connection{contractorConnections !== 1 ? 's' : ''}
                       </span>
-                    )}
+                      {mutualConnections > 0 && (
+                        <span className="flex items-center gap-1 text-xs text-blue-300 bg-blue-900 bg-opacity-50 px-2 py-0.5 rounded-full">
+                          <Users size={12} />
+                          {mutualConnections} Mutual
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -462,58 +464,61 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
       onClick={handleClosePortfolio}
     >
       <div
-        className="bg-white rounded-xl w-[90vw] max-w-md h-[70vh] min-h-[50vh] overflow-y-auto p-6 relative"
+        className="bg-white rounded-xl w-[90vw] max-w-md h-[70vh] min-h-[50vh] flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={handleClosePortfolio}
-          className="sticky top-4 right-4 z-10 text-gray-600 hover:text-gray-800 bg-white rounded-full p-2"
-          style={{ right: '1rem', left: 'auto' }}
-        >
-          <X size={24} />
-        </button>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">{contractor.name}'s Portfolio</h3>
-        {contractor.portfolio.length > 0 ? (
-          <div className="space-y-6">
-            {contractor.portfolio.map((project) => (
-              <div key={project.id} className="border-b pb-4 last:border-b-0">
-                <h4 className="text-lg font-semibold text-gray-800">{project.title}</h4>
-                <p className="text-gray-600">{project.description}</p>
-                {project.images && project.images.length > 0 && (
-                  <div
-                    className="mt-2 flex gap-2 overflow-x-auto snap-x snap-mandatory min-w-full"
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    {project.images.map((image, index) => (
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`Project image ${index + 1}`}
-                        className="w-48 h-48 object-cover rounded-lg snap-center flex-shrink-0"
-                        onError={handleImageError}
-                      />
-                    ))}
-                  </div>
-                )}
-                <p className="text-xs text-gray-500 mt-2">
-                  Completed: {new Date(project.completionDate).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </p>
-                {project.clientFeedback && (
-                  <p className="text-sm text-gray-700 mt-2">
-                    <span className="font-semibold">Client Feedback:</span> {project.clientFeedback}
+        <div className="flex justify-between items-center p-6 border-b bg-white sticky top-0 rounded-t-xl z-10">
+          <h3 className="text-lg font-semibold text-gray-800">{contractor.name}'s Portfolio</h3>
+          <button
+            onClick={handleClosePortfolio}
+            className="text-gray-600 hover:text-gray-800 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="overflow-y-auto p-6 pt-4">
+          {contractor.portfolio.length > 0 ? (
+            <div className="space-y-6">
+              {contractor.portfolio.map((project) => (
+                <div key={project.id} className="border-b pb-4 last:border-b-0">
+                  <h4 className="text-lg font-semibold text-gray-800">{project.title}</h4>
+                  <p className="text-gray-600">{project.description}</p>
+                  {project.images && project.images.length > 0 && (
+                    <div
+                      className="mt-2 flex gap-2 overflow-x-auto snap-x snap-mandatory min-w-full"
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                    >
+                      {project.images.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`Project image ${index + 1}`}
+                          className="w-48 h-48 object-cover rounded-lg snap-center flex-shrink-0"
+                          onError={handleImageError}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    Completed: {new Date(project.completionDate).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </p>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">No portfolio projects yet.</p>
-        )}
+                  {project.clientFeedback && (
+                    <p className="text-sm text-gray-700 mt-2">
+                      <span className="font-semibold">Client Feedback:</span> {project.clientFeedback}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No portfolio projects yet.</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -524,51 +529,54 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
       onClick={handleCloseReviews}
     >
       <div
-        className="bg-white rounded-xl w-[90vw] max-w-md h-[70vh] min-h-[50vh] overflow-y-auto p-6 relative"
+        className="bg-white rounded-xl w-[90vw] max-w-md h-[70vh] min-h-[50vh] flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={handleCloseReviews}
-          className="sticky top-4 right-4 z-10 text-gray-600 hover:text-gray-800 bg-white rounded-full p-2"
-          style={{ right: '1rem', left: 'auto' }}
-        >
-          <X size={24} />
-        </button>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">{contractor.name}'s Reviews</h3>
-        {reviews.length > 0 ? (
-          <div className="space-y-4">
-            {reviews.map((review) => {
-              const reviewer = allUsers.find((user) => user.id === review.reviewerId);
-              const isMutualConnection = (currentUser.connections || []).some(
-                (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
-              );
-              return (
-                <div key={review.id} className="border-b pb-4 last:border-b-0">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-1">
-                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                      <span className="font-semibold text-gray-700">
-                        {parseFloat(String(review.rating)).toFixed(1)}
-                      </span>
+        <div className="flex justify-between items-center p-6 border-b bg-white sticky top-0 rounded-t-xl z-10">
+          <h3 className="text-lg font-semibold text-gray-800">{contractor.name}'s Reviews</h3>
+          <button
+            onClick={handleCloseReviews}
+            className="text-gray-600 hover:text-gray-800 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="overflow-y-auto p-6 pt-4">
+          {reviews.length > 0 ? (
+            <div className="space-y-4">
+              {reviews.map((review) => {
+                const reviewer = allUsers.find((user) => user.id === review.reviewerId);
+                const isMutualConnection = (currentUser.connections || []).some(
+                  (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
+                );
+                return (
+                  <div key={review.id} className="border-b pb-4 last:border-b-0">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-1">
+                        <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                        <span className="font-semibold text-gray-700">
+                          {parseFloat(String(review.rating)).toFixed(1)}
+                        </span>
+                      </div>
+                      {isMutualConnection && (
+                        <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
+                          <Users size={12} />
+                          Mutual Connection
+                        </span>
+                      )}
                     </div>
-                    {isMutualConnection && (
-                      <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-                        <Users size={12} />
-                        Mutual Connection
-                      </span>
-                    )}
+                    <p className="text-gray-600">{review.text}</p>
+                    <p className="text-sm text-gray-400 mt-2">
+                      {reviewer?.name || 'Anonymous'} • {review.date}
+                    </p>
                   </div>
-                  <p className="text-gray-600">{review.text}</p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    {reviewer?.name || 'Anonymous'} • {review.date}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-gray-500">No reviews available.</p>
-        )}
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500">No reviews available.</p>
+          )}
+        </div>
       </div>
     </div>
   );
