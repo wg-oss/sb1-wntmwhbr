@@ -37,12 +37,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
   onPopUpChange,
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [showHint, setShowHint] = useState(true);
+  const [, setShowHint] = useState(true);
 
-  const handleWriteReview = () => {
-    // Add your review writing logic here
-    console.log('Write review clicked');
-  };
   const [showPortfolio, setShowPortfolio] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
 
@@ -423,26 +419,15 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                     <div>
                       <span className="text-lg font-semibold text-gray-800">Client Reviews</span>
                     </div>
-                    <button
-                      onClick={handleWriteReview}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1.5"
-                    >
-                      Write a review
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </button>
+
                   </div>
                   {reviews.slice(0, 2).map((review) => {
                     const reviewer = allUsers.find((user) => user.id === review.reviewerId);
-                    const isMutualConnection = (currentUser.connections || []).some(
-                      (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
-                    );
                     return (
-                      <div key={review.id} className="bg-white rounded-xl shadow-sm p-4">
+                      <div key={review.id} className="bg-white shadow-sm p-4">
                         <div className="flex items-start gap-4">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                            <div className="w-12 h-12 bg-gray-100 flex items-center justify-center">
                               <span className="text-2xl font-bold text-gray-600">{reviewer?.name?.[0] || 'A'}</span>
                             </div>
                           </div>
@@ -483,10 +468,10 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                   {reviews.slice(0, 3).map((review, index) => {
                     if (index === 2) {
                       return (
-                        <div key={review.id} className="bg-white rounded-xl shadow-sm p-4">
+                        <div key={review.id} className="bg-white shadow-sm p-4">
                           <div className="flex items-start gap-4">
                             <div className="flex-shrink-0">
-                              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                              <div className="w-12 h-12 bg-gray-100 flex items-center justify-center">
                                 <span className="text-2xl font-bold text-gray-600">{allUsers.find((user) => user.id === review.reviewerId)?.name?.[0] || 'A'}</span>
                               </div>
                             </div>
@@ -506,14 +491,6 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                                       </svg>
                                     ))}
                                   </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <button className="text-sm text-gray-500 hover:text-gray-700">
-                                    {review.helpfulCount} Helpful
-                                  </button>
-                                  <button className="text-sm text-gray-500 hover:text-gray-700">
-                                    {review.unhelpfulCount} Unhelpful
-                                  </button>
                                 </div>
                               </div>
                               <div className="mt-2 text-gray-600">
