@@ -382,69 +382,68 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
     {
       content: (
         <div className="flex flex-col h-full bg-white">
-          <div className="p-4 flex-1 relative flex flex-col">
-            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-5 mb-8 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-semibold text-gray-800">Client Reviews</h3>
-                <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full">
-                  <Star size={16} className="text-blue-500" />
-                  <span className="font-medium text-blue-700">{contractor.rating.toFixed(1)}</span>
-                  <span className="text-blue-500 text-sm">avg rating</span>
+          <div className="p-3 sm:p-4 flex-1 relative flex flex-col">
+            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 sm:p-5 mb-4 sm:mb-8 shadow-sm">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Client Reviews</h3>
+                <div className="flex items-center gap-1 bg-blue-50 px-2 sm:px-3 py-1 rounded-full">
+                  <Star size={14} className="text-blue-500" />
+                  <span className="font-medium text-blue-700 text-sm sm:text-base">{contractor.rating.toFixed(1)}</span>
+                  <span className="text-blue-500 text-xs sm:text-sm">avg rating</span>
                 </div>
               </div>
-              <div className="flex items-center gap-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <Users size={16} className="text-gray-500" />
+              <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Users size={14} className="text-gray-500" />
                   <span className="text-gray-600">{reviews.length} reviews</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} className="text-gray-500" />
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Calendar size={14} className="text-gray-500" />
                   <span className="text-gray-600">Last 12 months</span>
                 </div>
               </div>
             </div>
             {reviews.length > 0 ? (
-              <div className="overflow-hidden relative mt-28" style={{ height: '300px' }}>
-                <div className="space-y-4 absolute inset-0 pr-2">
+              <div className="overflow-hidden relative mt-20 sm:mt-28" style={{ height: 'calc(100% - 180px)' }}>
+                <div className="space-y-3 sm:space-y-4 absolute inset-0 pr-2">
                   {reviews.map((review) => {
                     const reviewer = allUsers.find((user) => user.id === review.reviewerId);
                     const isMutualConnection = (currentUser.connections || []).some(
                       (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
                     );
                     return (
-                      <div key={review.id} className="border-b pb-4">
-                        <div className="flex justify-between items-start mb-2">
+                      <div key={review.id} className="border-b pb-3 sm:pb-4">
+                        <div className="flex justify-between items-start mb-1 sm:mb-2">
                           <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-800 text-[15px]">{reviewer?.name || 'Anonymous'}</span>
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <span className="font-medium text-gray-800 text-sm sm:text-[15px]">{reviewer?.name || 'Anonymous'}</span>
                               {isMutualConnection && (
-                                <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
-                                  <Users size={12} />
+                                <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full">
+                                  <Users size={10} />
                                   Mutual
                                 </span>
                               )}
                             </div>
-                            <span className="text-sm text-gray-500">{review.date}</span>
+                            <span className="text-xs sm:text-sm text-gray-500">{review.date}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                            <span className="font-semibold text-gray-700 text-[15px]">{Math.round(review.rating)}/5</span>
+                            <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                            <span className="font-semibold text-gray-700 text-sm sm:text-[15px]">{Math.round(review.rating)}/5</span>
                           </div>
                         </div>
-                        <p className="text-gray-600 line-clamp-2 text-[15px]">{review.text}</p>
+                        <p className="text-gray-600 line-clamp-2 text-sm sm:text-[15px]">{review.text}</p>
                       </div>
                     );
                   })}
                 </div>
-                {/* Enhanced fade-out effect */}
-                <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" 
+                <div className="absolute bottom-0 left-0 right-0 h-32 sm:h-40 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" 
                      style={{ background: 'linear-gradient(to top, white 20%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0.4) 60%, transparent)' }} />
               </div>
             ) : (
               <p className="text-sm text-gray-500">No reviews available.</p>
             )}
           </div>
-          <div className="p-4 border-t bg-white relative z-10 -mt-8">
+          <div className="p-3 sm:p-4 border-t bg-white relative z-10 -mt-6 sm:-mt-8">
             <div className="flex justify-center gap-2 mb-3">
               {[0, 1, 2].map((index) => (
                 <button
