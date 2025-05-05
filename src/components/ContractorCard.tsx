@@ -286,7 +286,22 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                 )}
               </div>
               <div className="mt-auto w-full bg-white rounded-t-3xl -mt-6 relative z-10">
-                <div className="flex gap-2 px-4 pt-4">
+                <div className="flex justify-center gap-2 mt-2 pt-3">
+                  {[0, 1, 2].map((index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setCurrentSlide(index);
+                        setShowHint(false);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                        currentSlide === index ? 'bg-blue-500 scale-125' : 'bg-gray-300'
+                      }`}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2 px-4 pt-2 pb-4">
                   <button
                     onClick={onMessage}
                     className="flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm sm:text-base"
@@ -301,30 +316,6 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                     <Calendar size={18} />
                     <span>Schedule</span>
                   </button>
-                </div>
-                <div className="relative">
-                  {showHint && currentSlide === 0 && (
-                    <div className="absolute bottom-12 left-0 right-0 flex justify-center">
-                      <span className="bg-gray-800 bg-opacity-75 text-white text-xs px-3 py-1 rounded-full animate-fade-out">
-                        Swipe for more
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-center gap-2 mt-3 pb-4">
-                    {[0, 1, 2].map((index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setCurrentSlide(index);
-                          setShowHint(false);
-                        }}
-                        className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                          currentSlide === index ? 'bg-blue-500 scale-125' : 'bg-gray-300'
-                        }`}
-                        aria-label={`Go to slide ${index + 1}`}
-                      />
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
@@ -357,16 +348,7 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                 </p>
               </div>
               <div className="mt-auto w-full bg-white rounded-t-3xl -mt-6 relative z-10">
-                <div className="flex gap-2 px-4 pt-4">
-                  <button
-                    onClick={handleOpenPortfolio}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 bg-blue-500 text-white rounded-xl transition-colors text-sm sm:text-base"
-                  >
-                    <Folder size={18} />
-                    <span>View Portfolio</span>
-                  </button>
-                </div>
-                <div className="flex justify-center gap-2 mt-3 pb-4">
+                <div className="flex justify-center gap-2 mt-2 pt-3">
                   {[0, 1, 2].map((index) => (
                     <button
                       key={index}
@@ -377,6 +359,15 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}
+                </div>
+                <div className="flex gap-2 px-4 pt-2 pb-4">
+                  <button
+                    onClick={handleOpenPortfolio}
+                    className="flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 bg-blue-500 text-white rounded-xl transition-colors text-sm sm:text-base"
+                  >
+                    <Folder size={18} />
+                    <span>View Portfolio</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -391,56 +382,70 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
     {
       content: (
         <div className="flex flex-col h-full bg-white">
-          <div className="p-6 flex-1 relative">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Client Reviews</h3>
+          <div className="p-4 flex-1 relative flex flex-col">
+            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-5 mb-8 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xl font-semibold text-gray-800">Client Reviews</h3>
+                <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full">
+                  <Star size={16} className="text-blue-500" />
+                  <span className="font-medium text-blue-700">{contractor.rating.toFixed(1)}</span>
+                  <span className="text-blue-500 text-sm">avg rating</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-gray-500" />
+                  <span className="text-gray-600">{reviews.length} reviews</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar size={16} className="text-gray-500" />
+                  <span className="text-gray-600">Last 12 months</span>
+                </div>
+              </div>
+            </div>
             {reviews.length > 0 ? (
-              <div className="space-y-4 max-h-[40vh] overflow-hidden relative">
-                {reviews.map((review) => {
-                  const reviewer = allUsers.find((user) => user.id === review.reviewerId);
-                  const isMutualConnection = (currentUser.connections || []).some(
-                    (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
-                  );
-                  return (
-                    <div key={review.id} className="border-b pb-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-1">
-                          <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                          <span className="font-semibold text-gray-700">
-                            {parseFloat(String(review.rating)).toFixed(1)}
-                          </span>
+              <div className="overflow-hidden relative mt-28" style={{ height: '300px' }}>
+                <div className="space-y-4 absolute inset-0 pr-2">
+                  {reviews.map((review) => {
+                    const reviewer = allUsers.find((user) => user.id === review.reviewerId);
+                    const isMutualConnection = (currentUser.connections || []).some(
+                      (conn) => conn.connectionId === review.reviewerId && conn.status === 'accepted'
+                    );
+                    return (
+                      <div key={review.id} className="border-b pb-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-800 text-[15px]">{reviewer?.name || 'Anonymous'}</span>
+                              {isMutualConnection && (
+                                <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
+                                  <Users size={12} />
+                                  Mutual
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-sm text-gray-500">{review.date}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                            <span className="font-semibold text-gray-700 text-[15px]">{Math.round(review.rating)}/5</span>
+                          </div>
                         </div>
-                        {isMutualConnection && (
-                          <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-                            <Users size={12} />
-                            Mutual Connection
-                          </span>
-                        )}
+                        <p className="text-gray-600 line-clamp-2 text-[15px]">{review.text}</p>
                       </div>
-                      <p className="text-gray-600">{review.text}</p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        {reviewer?.name || 'Anonymous'} • {review.date}
-                      </p>
-                    </div>
-                  );
-                })}
-                {/* Fade-out effect at the bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                    );
+                  })}
+                </div>
+                {/* Enhanced fade-out effect */}
+                <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" 
+                     style={{ background: 'linear-gradient(to top, white 20%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0.4) 60%, transparent)' }} />
               </div>
             ) : (
               <p className="text-sm text-gray-500">No reviews available.</p>
             )}
           </div>
-          <div className="p-6 border-t">
-            <div className="flex gap-2 px-4 pt-4">
-              <button
-                onClick={handleViewAllReviews}
-                className="flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 bg-blue-500 text-white rounded-xl transition-colors text-sm sm:text-base"
-              >
-                <Star size={18} />
-                <span>View All Reviews</span>
-              </button>
-            </div>
-            <div className="flex justify-center gap-2 mt-3 pb-4">
+          <div className="p-4 border-t bg-white relative z-10 -mt-8">
+            <div className="flex justify-center gap-2 mb-3">
               {[0, 1, 2].map((index) => (
                 <button
                   key={index}
@@ -452,6 +457,13 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                 />
               ))}
             </div>
+            <button
+              onClick={handleViewAllReviews}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-500 text-white rounded-xl transition-colors"
+            >
+              <Star size={18} />
+              <span>View All Reviews ({reviews.length})</span>
+            </button>
           </div>
         </div>
       ),
@@ -552,23 +564,22 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
                 return (
                   <div key={review.id} className="border-b pb-4 last:border-b-0">
                     <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-800">{reviewer?.name || 'Anonymous'}</span>
+                        {isMutualConnection && (
+                          <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
+                            <Users size={12} />
+                            Mutual
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1">
                         <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                        <span className="font-semibold text-gray-700">
-                          {parseFloat(String(review.rating)).toFixed(1)}
-                        </span>
+                        <span className="font-semibold text-gray-700">{Math.round(review.rating)}/5</span>
                       </div>
-                      {isMutualConnection && (
-                        <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-                          <Users size={12} />
-                          Mutual Connection
-                        </span>
-                      )}
                     </div>
                     <p className="text-gray-600">{review.text}</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      {reviewer?.name || 'Anonymous'} • {review.date}
-                    </p>
+                    <p className="text-sm text-gray-400 mt-2">{review.date}</p>
                   </div>
                 );
               })}
@@ -582,38 +593,40 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
   );
 
   return (
-    <>
-      <div className="relative w-full h-full">
-        {showPortfolio || showReviews ? (
-          <div className="bg-gray-100 w-full h-full overflow-hidden">
-            <div
-              className="flex h-full transition-transform duration-300 ease-in-out"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {slides.map((slide, index) => (
-                <div key={index} className="min-w-full h-full">
-                  {slide.content}
-                </div>
-              ))}
+    <div className="relative w-full h-full">
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full">
+        <div className="relative h-full">
+          {showPortfolio || showReviews ? (
+            <div className="bg-gray-100 w-full h-full overflow-hidden">
+              <div
+                className="flex h-full transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              >
+                {slides.map((slide, index) => (
+                  <div key={index} className="min-w-full h-full">
+                    {slide.content}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div
-            {...swipeHandlers}
-            className="bg-gray-100 w-full h-full overflow-hidden"
-          >
+          ) : (
             <div
-              className="flex h-full transition-transform duration-300 ease-in-out"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              {...swipeHandlers}
+              className="bg-gray-100 w-full h-full overflow-hidden"
             >
-              {slides.map((slide, index) => (
-                <div key={index} className="min-w-full h-full">
-                  {slide.content}
-                </div>
-              ))}
+              <div
+                className="flex h-full transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              >
+                {slides.map((slide, index) => (
+                  <div key={index} className="min-w-full h-full">
+                    {slide.content}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Render pop-ups using a portal */}
@@ -624,7 +637,7 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
       {showReviews && typeof document !== 'undefined' && document.body
         ? ReactDOM.createPortal(renderReviewsPopUp(), document.body)
         : null}
-    </>
+    </div>
   );
 };
 

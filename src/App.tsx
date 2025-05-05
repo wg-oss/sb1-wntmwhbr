@@ -204,6 +204,10 @@ function App() {
     specialty: 'All',
     experience: 5,
   });
+  const [isFirstContractorVisit, setIsFirstContractorVisit] = useState(true);
+  const [showPreferencesOnSwipe, setShowPreferencesOnSwipe] = useState(false);
+  const [hasVisitedSwipe, setHasVisitedSwipe] = useState(false);
+  const [hasSeenPreferences, setHasSeenPreferences] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -238,6 +242,8 @@ function App() {
       };
       setCurrentUser(baseUser);
       setIsAuthenticated(true);
+      setIsFirstContractorVisit(true);
+      setHasSeenPreferences(false);
       return;
     }
 
@@ -269,6 +275,8 @@ function App() {
       };
       setCurrentUser(user);
       setIsAuthenticated(true);
+      setIsFirstContractorVisit(true);
+      setHasSeenPreferences(false);
       return;
     }
 
@@ -301,6 +309,8 @@ function App() {
       };
       setCurrentUser(newUser);
       setIsAuthenticated(true);
+      setIsFirstContractorVisit(true);
+      setHasSeenPreferences(false);
     }
   };
 
@@ -484,6 +494,13 @@ function App() {
     setContractorPreferences(preferences);
     // For future implementation of contractor filtering
     console.log('Preferences updated:', contractorPreferences);
+  };
+
+  const handleSectionChange = (section: ActiveSection) => {
+    setActiveSection(section);
+    if (section === 'swipe' && !hasVisitedSwipe && currentUser?.role === 'realtor') {
+      setHasVisitedSwipe(true);
+    }
   };
 
   if (!isAuthenticated || !currentUser) {
@@ -722,6 +739,8 @@ function App() {
                 <ContractorPreferences
                   onPreferencesChange={handlePreferencesChange}
                   specialties={specialties}
+                  initialOpen={!hasSeenPreferences && activeSection === 'swipe'}
+                  onClose={() => setHasSeenPreferences(true)}
                 />
                 <div 
                   {...swipeHandlers}
@@ -868,7 +887,7 @@ function App() {
             <Search size={24} />
           </button>
           <button
-            onClick={() => setActiveSection('swipe')}
+            onClick={() => handleSectionChange('swipe')}
             className={`p-2 rounded-full ${activeSection === 'swipe' ? 'text-blue-500' : 'text-gray-500'}`}
           >
             {currentUser.role === 'contractor' ? <Calendar size={24} /> : <Heart size={24} />}

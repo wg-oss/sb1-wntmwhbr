@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
 
 interface ContractorPreferencesProps {
@@ -8,18 +8,36 @@ interface ContractorPreferencesProps {
     experience: number;
   }) => void;
   specialties: string[];
+  initialOpen?: boolean;
+  onClose?: () => void;
 }
 
 const ContractorPreferences: React.FC<ContractorPreferencesProps> = ({
   onPreferencesChange,
   specialties,
+  initialOpen = false,
+  onClose,
 }) => {
+  console.log('ContractorPreferences rendered, initialOpen:', initialOpen);
   const [isOpen, setIsOpen] = useState(false);
   const [preferences, setPreferences] = useState({
     distance: 50,
     specialty: 'All',
     experience: 5,
   });
+
+  useEffect(() => {
+    console.log('useEffect triggered, initialOpen:', initialOpen);
+    setIsOpen(initialOpen);
+  }, [initialOpen]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    onPreferencesChange(preferences);
+    if (onClose) {
+      onClose();
+    }
+  };
 
   const handleChange = (key: keyof typeof preferences, value: string | number) => {
     const newPreferences = { ...preferences, [key]: value };
@@ -42,7 +60,7 @@ const ContractorPreferences: React.FC<ContractorPreferencesProps> = ({
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-gray-800">Filter Contractors</h3>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={handleClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X size={24} className="text-gray-600" />
