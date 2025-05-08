@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-app-cache-v1';
+const CACHE_NAME = 'contractmatch-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
