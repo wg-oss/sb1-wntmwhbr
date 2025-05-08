@@ -9,6 +9,12 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: true,
   },
+  base: process.env.NODE_ENV === 'production' ? '/realtor-contractor-platform/' : '/',
+  resolve: {
+    alias: {
+      '@': 'src'
+    }
+  },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
