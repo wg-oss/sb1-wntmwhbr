@@ -204,6 +204,8 @@ function App() {
     specialty: 'All',
     experience: 5,
   });
+  const [isFirstContractorVisit, setIsFirstContractorVisit] = useState(true);
+  const [showPreferencesOnSwipe, setShowPreferencesOnSwipe] = useState(false);
   const [hasVisitedSwipe, setHasVisitedSwipe] = useState(false);
   const [hasSeenPreferences, setHasSeenPreferences] = useState(false);
 
@@ -240,6 +242,7 @@ function App() {
       };
       setCurrentUser(baseUser);
       setIsAuthenticated(true);
+      setIsFirstContractorVisit(true);
       setHasSeenPreferences(false);
       return;
     }
@@ -272,6 +275,7 @@ function App() {
       };
       setCurrentUser(user);
       setIsAuthenticated(true);
+      setIsFirstContractorVisit(true);
       setHasSeenPreferences(false);
       return;
     }
@@ -305,6 +309,7 @@ function App() {
       };
       setCurrentUser(newUser);
       setIsAuthenticated(true);
+      setIsFirstContractorVisit(true);
       setHasSeenPreferences(false);
     }
   };
