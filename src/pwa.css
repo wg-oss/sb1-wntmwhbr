@@ -1,21 +1,10 @@
-/* PWA-specific styles - minimal version */
-html {
-  height: 100vh;
-  height: -webkit-fill-available;
-}
-
-body {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-  /* We'll keep the app's existing background color */
-}
-
-/* Only add safe area padding for iOS PWA */
-@supports (padding: env(safe-area-inset-top)) {
-  @media screen and (display-mode: standalone) {
-    body {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
+/* iOS PWA height fix - extremely minimal */
+@media screen and (display-mode: standalone) {
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: -webkit-fill-available;
   }
 }
