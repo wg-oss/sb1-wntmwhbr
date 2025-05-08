@@ -9,7 +9,6 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: true,
   },
-  base: process.env.NODE_ENV === 'production' ? '/sb1-wntmwhbr/' : '/',
   resolve: {
     alias: {
       '@': 'src'
