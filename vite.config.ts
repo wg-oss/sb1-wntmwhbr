@@ -9,6 +9,7 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: true,
   },
+  publicDir: 'public',
   resolve: {
     alias: {
       '@': 'src'
