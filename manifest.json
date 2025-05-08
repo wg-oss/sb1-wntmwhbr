@@ -1,9 +1,9 @@
 {
-  "name": "My App",
-  "short_name": "My App",
-  "description": "A Progressive Web App",
+  "name": "ContractMatch",
+  "short_name": "ContractMatch",
+  "description": "Connect with trusted professionals",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
-  "theme_color": "#317EFB"
+  "theme_color": "#ffffff"
 }
