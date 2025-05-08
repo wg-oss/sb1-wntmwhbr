@@ -3,71 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#317EFB">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ContractMatch">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>ContractMatch</title>
-    <style>
-      /* iOS PWA fixes */
-      html, body {
-        height: 100%;
-        width: 100%;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-        position: fixed;
-      }
-      
-      body {
-        /* Match app background color */
-        background-color: #ffffff;
-      }
-      
-      #root {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow: auto;
-        /* Respect iOS safe areas */
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      
-      @supports (-webkit-touch-callout: none) {
-        /* iOS specific tweaks */
-        body {
-          height: -webkit-fill-available;
-        }
-      }
-    </style>
   </head>
-  <body>
+  <body style="min-height: 100vh; min-height: -webkit-fill-available;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // iOS PWA fixes
-      function updateHeight() {
-        // iOS Safari has a bug where 100vh is not correctly calculated when the UI elements are hidden in PWA mode
-        // This is a workaround to manually set the height to the window's inner height
-        document.documentElement.style.height = window.innerHeight + 'px';
-        document.body.style.height = window.innerHeight + 'px';
-      }
-      
-      // Run on load
-      window.addEventListener('load', updateHeight);
-      // Run on resize
-      window.addEventListener('resize', updateHeight);
-      // Run on orientation change
-      window.addEventListener('orientationchange', updateHeight);
-      
-      // Initial run
-      updateHeight();
+      // Fix for iOS PWA height issues
+      document.documentElement.style.height = '-webkit-fill-available';
     </script>
   </body>
 </html>
