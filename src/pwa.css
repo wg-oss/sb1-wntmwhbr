@@ -1,0 +1,33 @@
+/* PWA-specific styles */
+html, body, #root {
+  height: 100vh;
+  height: -webkit-fill-available;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  background-color: #317EFB; /* Match your theme color */
+}
+
+/* Fix for iOS safe areas */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Make sure #root fills the entire screen */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
