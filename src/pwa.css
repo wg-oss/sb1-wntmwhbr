@@ -1,3 +1,11 @@
+/* src/pwa.css */
+html, body {
+  margin: 0; /* Reset margin */
+  padding: 0; /* Reset padding */
+  height: 100%; /* Ensure full height */
+  overflow: hidden; /* Prevent scrolling */
+}
+
 /* iOS PWA height fix - extremely minimal */
 @media screen and (display-mode: standalone) {
   html {
