@@ -717,8 +717,8 @@ function App() {
         </header>
       ) : null}
 
-      <main className={`${activeSection === 'swipe' && currentUser.role !== 'contractor' ? '' : 'pb-[65px]'}`}>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+      <main className="min-h-screen">
+        <div className="w-full h-full relative">
           {activeSection === 'feed' ? (
             <Feed
               currentUser={convertAppUserToUser(currentUser)}
@@ -744,10 +744,10 @@ function App() {
                 />
                 <div 
                   {...swipeHandlers}
-                  className="fixed left-0 right-0 top-0 bottom-[65px] overflow-hidden z-10"
+                  className="fixed inset-0 overflow-hidden z-10"
                 >
                   <div
-                    className="h-full transition-transform duration-500 ease-in-out"
+                    className="h-full w-full transition-transform duration-500 ease-in-out"
                     style={{ transform: `translateY(-${currentProfileIndex * 100}%)` }}
                   >
                     {contractorsData.map((contractor) => {
@@ -755,7 +755,7 @@ function App() {
                       return (
                         <div
                           key={contractor.id}
-                          className="h-full flex items-center justify-center"
+                          className="h-full w-full flex items-center justify-center"
                           style={{ zIndex: isActivePopUp ? 100 : 0 }}
                         >
                           {renderContractorCard(contractor)}
@@ -767,7 +767,7 @@ function App() {
               </>
             )
           ) : activeSection === 'network' ? (
-            <div className="flex-1">
+            <div className="max-w-5xl mx-auto px-4 py-8">
               <NetworkSection
                 currentUser={convertAppUserToUser(currentUser)}
                 onViewProfile={(user) => handleViewProfile(user, 'network' as ActiveSection)}
