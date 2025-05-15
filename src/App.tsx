@@ -191,8 +191,7 @@ function App() {
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [previousSection, setPreviousSection] = useState<ActiveSection>('feed');
   const [posts, setPosts] = useState<Post[]>(initialPosts);
-  const [isSwipeDisabled, setIsSwipeDisabled] = useState(false);
-  const [activePopUpCard, setActivePopUpCard] = useState<string | null>(null);
+  const [isSwipeDisabled] = useState(false);
   const [contractorsData, setContractorsData] = useState<Contractor[]>(updatedContractors);
   const [tempUsers, setTempUsers] = useState<AppUser[]>([]);
   const [contractorPreferences, setContractorPreferences] = useState<{
@@ -469,14 +468,6 @@ function App() {
     delta: 10,
   });
 
-  const handleDisableSwipe = () => {
-    setIsSwipeDisabled(true);
-  };
-
-  const handleEnableSwipe = () => {
-    setIsSwipeDisabled(false);
-  };
-
   const handlePreferencesChange = (preferences: {
     distance: number;
     specialty: string;
@@ -737,12 +728,10 @@ function App() {
                     style={{ transform: `translateY(-${currentProfileIndex * 100}%)` }}
                   >
                     {contractorsData.map((contractor) => {
-                      const isActivePopUp = activePopUpCard === contractor.id;
                       return (
                         <div
                           key={contractor.id}
                           className="h-full flex items-center justify-center"
-                          style={{ zIndex: isActivePopUp ? 100 : 0 }}
                         >
                           {renderContractorCard(contractor)}
                         </div>
