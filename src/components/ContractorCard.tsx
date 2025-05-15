@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Star, Calendar, MessageSquare } from 'lucide-react';
+import { Star, Calendar } from 'lucide-react';
 import { Contractor, User } from '../types';
 
 interface ContractorCardProps {
@@ -134,7 +134,7 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
               <h3 className="text-xl font-semibold mb-4 text-blue-700">Client Reviews</h3>
               <div className="w-full max-h-72 overflow-y-auto space-y-4">
                 {contractor.generalReviews && contractor.generalReviews.length > 0 ? (
-                  contractor.generalReviews.map((review, idx) => (
+                  contractor.generalReviews.map((review: import('../types').GeneralReview, idx: number) => (
                     <div key={idx} className="bg-blue-50 border border-blue-100 rounded-xl p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
                         {[...Array(5)].map((_, i) => (

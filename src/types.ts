@@ -58,6 +58,14 @@ export interface BookedSlot {
   notes: string;
 }
 
+export interface GeneralReview {
+  rating: number;
+  content: string;
+  reviewer: string;
+  date: string;
+  mutual?: boolean;
+}
+
 export interface Realtor {
   id: string;
   name: string;
@@ -93,6 +101,7 @@ export interface Contractor {
   role: 'contractor';
   company: string;
   rating: number;
+  generalReviews?: GeneralReview[];
 }
 
 export type User = Realtor | Contractor;
