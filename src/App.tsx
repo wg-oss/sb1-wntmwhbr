@@ -477,10 +477,6 @@ function App() {
     setIsSwipeDisabled(false);
   };
 
-  const handlePopUpChange = (contractorId: string, isOpen: boolean) => {
-    setActivePopUpCard(isOpen ? contractorId : null);
-  };
-
   const handlePreferencesChange = (preferences: {
     distance: number;
     specialty: string;
@@ -659,11 +655,6 @@ function App() {
         contractor={contractor}
         currentUser={user}
         onSchedule={() => handleSchedule(contractor)}
-        onMessage={() => handleMessage(contractor)}
-        onViewProfile={() => handleViewProfile(contractor, 'swipe' as ActiveSection)}
-        onDisableSwipe={handleDisableSwipe}
-        onEnableSwipe={handleEnableSwipe}
-        onPopUpChange={(isOpen) => handlePopUpChange(contractor.id, isOpen)}
       />
     );
   };
