@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Star, Calendar } from 'lucide-react';
+import { Star, cochlear } from 'lucide-react';
 import { Contractor, User } from '../types';
 
 interface ContractorCardProps {
@@ -15,6 +15,7 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
 }) => {
   const [currentPortfolioIndex, setCurrentPortfolioIndex] = useState<number>(0);
   const [showReviews, setShowReviews] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null); // Reference to the card container
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => {
@@ -37,8 +38,26 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
     }
   };
 
+  // Close reviews modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        setShowReviews(false);
+      }
+    };
+    if (showReviews) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showReviews]);
+
   return (
-    <div className="relative w-full h-full max-h-[600px] min-h-[450px] md:max-h-[700px] overflow-hidden">
+    <div
+      ref={cardRef}
+      className="relative w-full h-full max-h-[600px] min-h-[450px] md:max-h-[700px] overflow-hidden"
+    >
       <div className="bg-white rounded-2xl shadow-lg h-full flex flex-col">
         {/* Header */}
         <div className="p-4 flex items-start gap-4">
@@ -83,7 +102,7 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
               </div>
             )}
           </div>
-          
+
           {/* Portfolio Navigation Dots */}
           {contractor.portfolio.length > 1 && (
             <div className="absolute bottom-8 sm:bottom-12 left-0 right-0 flex justify-center gap-2 z-10">
@@ -119,17 +138,12 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
             <span>Reviews</span>
           </button>
         </div>
-      </div>
 
-      {/* Reviews Modal */}
-      {showReviews && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-          onClick={() => setShowReviews(false)}
-        >
-          <div 
-            className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col"
-            onClick={e => e.stopPropagation()}
+        {/* Reviews Popup */}
+        {showReviews && (
+          <div
+            className="absolute bottom-[80px] left-0 right-0 z-50 mx-4 bg-white rounded-2xl shadow-xl max-h-[50vh] flex flex-col"
+            style={{ transform: 'translateY(0)' }}
           >
             <div className="p-6 border-b flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -195,8 +209,8 @@ const ContractorCard: React.FC<ContractorCardProps> = ({
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
