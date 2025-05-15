@@ -203,6 +203,29 @@ export const contractors: Contractor[] = [
         status: 'pending',
         notes: 'Potential new project discussion.'
       }
+    ],
+    generalReviews: [
+      {
+        rating: 4.8,
+        content: "Fantastic work on our home renovation. Highly recommend John!",
+        reviewer: "Sofia Rodriguez",
+        date: "2025-03-05",
+        mutual: false
+      },
+      {
+        rating: 4.6,
+        content: "Reliable and skilled. The project timeline was met perfectly.",
+        reviewer: "Michael Chen",
+        date: "2025-01-20",
+        mutual: true
+      },
+      {
+        rating: 4.9,
+        content: "John transformed our kitchen with incredible attention to detail. A true professional!",
+        reviewer: "Emma Thompson",
+        date: "2025-02-15",
+        mutual: false
+      }
     ]
   },
   {
@@ -274,7 +297,23 @@ export const contractors: Contractor[] = [
       meetingDuration: 30,
       bookedSlots: []
     },
-    pendingMeetings: []
+    pendingMeetings: [],
+    generalReviews: [
+      {
+        rating: 4.9,
+        content: "Sarah's bathroom remodel was stunning. She exceeded our expectations!",
+        reviewer: "Emma Thompson",
+        date: "2025-02-10",
+        mutual: true
+      },
+      {
+        rating: 4.7,
+        content: "Very professional and timely. Highly recommend Sarah for any bathroom project.",
+        reviewer: "Michael Chen",
+        date: "2025-03-01",
+        mutual: false
+      }
+    ]
   },
   {
     id: 'c3',
@@ -345,7 +384,23 @@ export const contractors: Contractor[] = [
       meetingDuration: 30,
       bookedSlots: []
     },
-    pendingMeetings: []
+    pendingMeetings: [],
+    generalReviews: [
+      {
+        rating: 5.0,
+        content: "David's custom carpentry is unmatched. The built-in library is a masterpiece!",
+        reviewer: "Sofia Rodriguez",
+        date: "2025-01-25",
+        mutual: false
+      },
+      {
+        rating: 4.8,
+        content: "Beautiful work and great communication throughout the project.",
+        reviewer: "Emma Thompson",
+        date: "2025-02-18",
+        mutual: true
+      }
+    ]
   },
   {
     id: 'c4',
@@ -361,60 +416,85 @@ export const contractors: Contractor[] = [
         id: 'p1-c4',
         userId: 'c4',
         content: 'Check out my latest home renovation project!',
-        images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'],
+        images: ['https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?auto=format&fit=crop&q=80&w=500'],
+        projectId: 'p4',
         likes: [],
-        comments: [],
-        createdAt: '2024-01-15T10:00:00Z',
+        comments: [
+          {
+            id: 'comm4',
+            userId: 'r1',
+            content: 'Lisa did an amazing job with our living room redesign!',
+            createdAt: '2024-03-01T00:00:00Z'
+          }
+        ],
+        createdAt: '2024-03-01T00:00:00Z',
         type: 'project-showcase'
       }
     ],
     portfolio: [
       {
-        id: 'proj1-c4',
-        title: 'Home Renovation',
-        description: 'A complete home renovation project.',
-        images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'],
-        completionDate: '2023-10-01',
+        id: 'pf1-c4',
+        title: 'Living Room Redesign',
+        description: 'Transformed a dated living room into a modern, cozy space.',
+        images: ['https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?auto=format&fit=crop&q=80&w=500'],
+        completionDate: '2024-03-01T00:00:00Z',
+        clientFeedback: 'Lisa did an amazing job with our living room redesign!'
       },
       {
         id: 'pf2-c4',
-        title: 'Cozy Living Room Redesign',
-        description: 'Revamped a living room with warm tones and custom furniture layouts.',
-        images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=500'],
-        completionDate: '2023-09-20T00:00:00Z',
-        clientFeedback: 'The space feels so inviting now. Amazing work!'
+        title: 'Eco-Friendly Home Office',
+        description: 'Designed a sustainable home office with eco-friendly materials.',
+        images: ['https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?auto=format&fit=crop&q=80&w=500'],
+        completionDate: '2023-12-20T00:00:00Z',
+        clientFeedback: 'The home office is both beautiful and functional. Great work!'
       }
     ],
-    bio: 'Combining form and function to create spaces that inspire and delight.',
+    bio: 'Blending creativity and functionality to create beautiful, sustainable spaces.',
     role: 'contractor',
     connections: [
       {
-        id: 'conn13',
+        id: 'conn12',
         userId: 'c4',
         connectionId: 'r1',
         status: 'accepted',
-        createdAt: '2024-02-10T00:00:00Z',
+        createdAt: '2024-03-01T00:00:00Z',
         workHistory: {
           projectId: 'p4',
           relationship: 'project-collaboration'
         }
       }
     ],
-    company: 'Wong Design Studio',
+    company: 'Wong Interiors',
     availability: {
       workingHours: { start: '09:00', end: '17:00' },
       workingDays: [1, 2, 3, 4, 5],
       meetingDuration: 30,
       bookedSlots: []
     },
-    pendingMeetings: []
+    pendingMeetings: [],
+    generalReviews: [
+      {
+        rating: 4.7,
+        content: "Lisa's design sense is incredible. Our living room feels brand new!",
+        reviewer: "Michael Chen",
+        date: "2025-03-12",
+        mutual: false
+      },
+      {
+        rating: 4.6,
+        content: "Very creative and easy to work with. Highly recommend Lisa!",
+        reviewer: "Sofia Rodriguez",
+        date: "2025-04-01",
+        mutual: true
+      }
+    ]
   },
   {
     id: 'c5',
     name: 'James Wilson',
     email: 'james.wilson@example.com',
-    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
-    specialty: 'Outdoor Living Spaces',
+    photo: 'https://images.unsplash.com/photo-1598902108854-10e335adac99?auto=format&fit=crop&q=80&w=400',
+    specialty: 'Landscape Design',
     yearsExperience: 14,
     rating: 4.8,
     certifications: ['Landscape Architecture License', 'Hardscape Specialist'],
@@ -478,6 +558,22 @@ export const contractors: Contractor[] = [
       meetingDuration: 30,
       bookedSlots: []
     },
-    pendingMeetings: []
+    pendingMeetings: [],
+    generalReviews: [
+      {
+        rating: 4.9,
+        content: "James created our dream backyard. Every detail is perfect!",
+        reviewer: "Emma Thompson",
+        date: "2025-03-20",
+        mutual: false
+      },
+      {
+        rating: 4.8,
+        content: "The patio is our favorite spot now. Fantastic job!",
+        reviewer: "Michael Chen",
+        date: "2025-04-10",
+        mutual: true
+      }
+    ]
   }
 ];
