@@ -311,7 +311,7 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
-    setActiveSection('feed');
+    localStorage.removeItem('currentSession');
   };
 
   const handleMessage = (user: User) => {

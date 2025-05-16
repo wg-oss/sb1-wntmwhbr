@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KeyRound, User, Building2, UserPlus, Mail } from 'lucide-react';
 
 interface User {
@@ -23,6 +23,28 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, tempUsers, setTempUsers 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'realtor' | 'contractor'>('realtor');
   const [error, setError] = useState('');
+
+  // Load saved users from localStorage on component mount
+  useEffect(() => {
+    const savedUsers = localStorage.getItem('users');
+    if (savedUsers) {
+      setTempUsers(JSON.parse(savedUsers));
+    }
+  }, []);
+
+  // Save users to localStorage whenever tempUsers changes
+  useEffect(() => {
+    localStorage.setItem('users', JSON.stringify(tempUsers));
+  }, [tempUsers]);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem('currentSession');
+    if (savedSession) {
+      const session = JSON.parse(savedSession);
+      onLogin(session);
+    }
+  }, []);
 
   const credentials = {
     realtor: { username: 'emma', password: 'realtor123', id: 'r1' },
@@ -69,21 +91,54 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, tempUsers, setTempUsers 
       };
 
       setTempUsers(prev => [...prev, newUser]);
-      onLogin(newUser); // Pass the full user object to onLogin
+      
+      // Save session
+      const sessionData = {
+        id: newUser.id,
+        role: newUser.role,
+        username: newUser.username,
+        email: newUser.email
+      };
+      localStorage.setItem('currentSession', JSON.stringify(sessionData));
+      
+      onLogin(newUser);
       return;
     }
     
     // Login logic
     const tempUser = tempUsers.find(user => user.username === username && user.password === password);
     if (tempUser) {
+      // Save session
+      const sessionData = {
+        id: tempUser.id,
+        role: tempUser.role,
+        username: tempUser.username,
+        email: tempUser.email
+      };
+      localStorage.setItem('currentSession', JSON.stringify(sessionData));
+      
       onLogin(tempUser);
       return;
     }
 
     if (username === credentials.realtor.username && password === credentials.realtor.password) {
-      onLogin({ id: credentials.realtor.id, role: 'realtor', username: credentials.realtor.username });
+      const sessionData = {
+        id: credentials.realtor.id,
+        role: 'realtor' as const,
+        username: credentials.realtor.username
+      };
+      localStorage.setItem('currentSession', JSON.stringify(sessionData));
+      
+      onLogin(sessionData);
     } else if (username === credentials.contractor.username && password === credentials.contractor.password) {
-      onLogin({ id: credentials.contractor.id, role: 'contractor', username: credentials.contractor.username });
+      const sessionData = {
+        id: credentials.contractor.id,
+        role: 'contractor' as const,
+        username: credentials.contractor.username
+      };
+      localStorage.setItem('currentSession', JSON.stringify(sessionData));
+      
+      onLogin(sessionData);
     } else {
       setError('Invalid credentials');
     }
